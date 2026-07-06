@@ -1,0 +1,6 @@
+{
+  "name": "Connectify",
+  "description": "A premium social media platform featuring real-time feed, direct messaging, stories, analytics dashboard, trending hashtags, content moderation, and customizable profiles.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
