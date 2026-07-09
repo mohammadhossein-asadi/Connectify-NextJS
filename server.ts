@@ -17,7 +17,7 @@ import {
 dotenv.config();
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 // Custom CORS middleware to support external clients (e.g., deployed on Vercel)
 app.use((req, res, next) => {
@@ -1677,18 +1677,21 @@ app.post("/api/gemini/generate-post-draft", async (req, res) => {
 // ---------------- VITE MIDDLEWARE OR STATIC SERVING ----------------
 
 async function startServer() {
-  if (process.env.NODE_ENV !== "production") {
+  const distPath = path.join(process.cwd(), "dist");
+  const isProduction =
+    process.env.NODE_ENV === "production" || !fs.existsSync(path.join(process.cwd(), "src"));
+
+  if (isProduction) {
+    app.use(express.static(distPath));
+    app.get("*", (req, res) => {
+      res.sendFile(path.join(distPath, "index.html"));
+    });
+  } else {
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",
     });
     app.use(vite.middlewares);
-  } else {
-    const distPath = path.join(process.cwd(), "dist");
-    app.use(express.static(distPath));
-    app.get("*", (req, res) => {
-      res.sendFile(path.join(distPath, "index.html"));
-    });
   }
 
   app.listen(PORT, "0.0.0.0", () => {

@@ -10,15 +10,15 @@ const customFetch = function (input: RequestInfo | URL, init?: RequestInit) {
   
   if (url.startsWith('/api/')) {
     const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    const isCloudRun = window.location.hostname.endsWith('.run.app');
-    
-    // Check if custom VITE_API_URL is provided, or fallback to the deployed production Shared App URL
+
+    // Check if custom VITE_API_URL is provided
     const envApiUrl = (import.meta as any).env?.VITE_API_URL;
-    const backendUrl = envApiUrl || 'https://ais-pre-uaq5apaedzbw26pq6t7qxr-981004563440.asia-southeast1.run.app';
-    
-    if (!isLocalhost && !isCloudRun) {
-      url = `${backendUrl.replace(/\/$/, '')}${url}`;
+
+    if (envApiUrl) {
+      // Use explicit API URL if configured (e.g. for custom deployments)
+      url = `${envApiUrl.replace(/\/$/, '')}${url}`;
     }
+    // Otherwise keep the relative URL — Vercel rewrites (vercel.json) proxy /api/* to the backend
   }
   
   if (typeof input === 'string') {
