@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { User, Post, Story, Comment } from '../types';
 import StoriesList from './StoriesList';
 import PostCreate from './PostCreate';
+import { motion, AnimatePresence } from 'motion/react';
 import { 
   Heart, 
   MessageCircle, 
@@ -20,7 +21,11 @@ import {
   Send,
   X,
   ChevronRight,
-  ChevronLeft
+  ChevronLeft,
+  Users,
+  BarChart3,
+  Globe,
+  Lock
 } from 'lucide-react';
 
 interface FeedProps {
@@ -314,6 +319,29 @@ function PostMedia({ post }: PostMediaProps) {
   );
 }
 
+const feedContainerVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.08,
+    },
+  },
+};
+
+const feedItemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      type: 'spring',
+      stiffness: 100,
+      damping: 15,
+    },
+  },
+};
+
 export default function Feed({
   currentUser,
   posts,
@@ -326,11 +354,28 @@ export default function Feed({
   setActiveTab,
   onMessageUser,
 }: FeedProps) {
-  const [filter, setFilter] = useState<'latest' | 'trending' | 'oldest'>('latest');
+  const [filter, setFilter] = useState<'latest' | 'trending' | 'oldest' | 'popular' | 'following'>('latest');
   const [activeCommentsPostId, setActiveCommentsPostId] = useState<string | null>(null);
   const [commentText, setCommentText] = useState('');
   const [copiedPostId, setCopiedPostId] = useState<string | null>(null);
   const [commentLoading, setCommentLoading] = useState(false);
+
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [toastType, setToastType] = useState<'success' | 'info'>('success');
+
+  const showToast = (message: string, type: 'success' | 'info' = 'success') => {
+    setToastMessage(message);
+    setToastType(type);
+  };
+
+  useEffect(() => {
+    if (toastMessage) {
+      const timer = setTimeout(() => {
+        setToastMessage(null);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [toastMessage]);
 
   const [sharingPost, setSharingPost] = useState<Post | null>(null);
   const [sharingToStory, setSharingToStory] = useState(false);
@@ -383,7 +428,7 @@ export default function Feed({
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        let url = `/api/posts?filter=${filter}`;
+        let url = `/api/posts?filter=${filter}&currentUserId=${currentUser.id}`;
         if (searchQuery) {
           url += `&search=${encodeURIComponent(searchQuery)}`;
         }
@@ -398,7 +443,7 @@ export default function Feed({
     };
 
     fetchPosts();
-  }, [filter, searchQuery, setPosts]);
+  }, [filter, searchQuery, setPosts, currentUser.id]);
 
   const handlePostCreated = (newPost: Post) => {
     // Add new post to start of state
@@ -434,6 +479,99 @@ export default function Feed({
       setPosts((prev) => prev.map((p) => (p.id === postId ? updatedPost : p)));
     } catch (err) {
       console.error('Like request failed:', err);
+    }
+  };
+
+  const handleReactPost = async (postId: string, reactionType: 'like' | 'heart' | 'fire' | 'laugh') => {
+    try {
+      // Optimistic Update
+      setPosts((prev) =>
+        prev.map((p) => {
+          if (p.id === postId) {
+            const currentReactions = p.reactions || { like: [], heart: [], fire: [], laugh: [] };
+            const rList = currentReactions[reactionType] || [];
+            const hasReacted = rList.includes(currentUser.id);
+            const nextList = hasReacted
+              ? rList.filter((id) => id !== currentUser.id)
+              : [...rList, currentUser.id];
+            
+            const updatedReactions = {
+              ...currentReactions,
+              [reactionType]: nextList
+            };
+
+            // Sync likes array if reactionType is 'like'
+            let nextLikes = p.likes;
+            if (reactionType === 'like') {
+              nextLikes = nextList;
+            }
+
+            return { 
+              ...p, 
+              reactions: updatedReactions,
+              likes: nextLikes
+            };
+          }
+          return p;
+        })
+      );
+
+      const res = await fetch(`/api/posts/${postId}/react`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: currentUser.id, reactionType }),
+      });
+
+      if (!res.ok) throw new Error('Failed to react to post');
+      const updatedPost = await res.json();
+
+      // Sync backend state exactly
+      setPosts((prev) => prev.map((p) => (p.id === postId ? updatedPost : p)));
+    } catch (err) {
+      console.error('React request failed:', err);
+    }
+  };
+
+  const handleVotePoll = async (postId: string, optionId: string) => {
+    try {
+      // Optimistic Update
+      setPosts((prev) =>
+        prev.map((p) => {
+          if (p.id === postId && p.poll) {
+            const nextOptions = p.poll.options.map((opt) => {
+              // Filter out this user's ID from existing option votes
+              let votes = (opt.votes || []).filter((id) => id !== currentUser.id);
+              if (opt.id === optionId) {
+                // If it's the selected option, add user ID
+                votes = [...votes, currentUser.id];
+              }
+              return { ...opt, votes };
+            });
+            return {
+              ...p,
+              poll: {
+                ...p.poll,
+                options: nextOptions,
+              },
+            };
+          }
+          return p;
+        })
+      );
+
+      const res = await fetch(`/api/posts/${postId}/poll/vote`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: currentUser.id, optionId }),
+      });
+
+      if (!res.ok) throw new Error('Failed to vote');
+      const updatedPost = await res.json();
+
+      // Sync backend state exactly
+      setPosts((prev) => prev.map((p) => (p.id === postId ? updatedPost : p)));
+    } catch (err) {
+      console.error('Vote poll failed:', err);
     }
   };
 
@@ -602,10 +740,18 @@ export default function Feed({
 
       if (res.ok) {
         const data = await res.json();
-        // Update current user bookmarks array directly (handled in Parent App.tsx trigger normally, but we can do it locally on our records copy too)
+        const isAdded = data.bookmarks.includes(postId);
+        
+        // Update current user bookmarks array directly
         currentUser.bookmarks = data.bookmarks;
         // Trigger visual state update by forcing posts redraw
         setPosts((prev) => [...prev]);
+
+        if (isAdded) {
+          showToast('Saved to your bookmarks!', 'success');
+        } else {
+          showToast('Removed from your bookmarks.', 'info');
+        }
       }
     } catch (err) {
       console.error('Failed to bookmark post:', err);
@@ -678,18 +824,29 @@ export default function Feed({
             }`}
           >
             <Clock className="h-3.5 w-3.5" />
-            <span>Latest</span>
+            <span>Recent</span>
           </button>
           <button
-            onClick={() => setFilter('trending')}
+            onClick={() => setFilter('popular')}
             className={`flex items-center space-x-1 rounded-lg px-3 py-1.5 text-xs font-bold transition ${
-              filter === 'trending'
+              filter === 'popular' || filter === 'trending'
                 ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-900 dark:text-white'
                 : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
             }`}
           >
             <TrendingUp className="h-3.5 w-3.5" />
-            <span>Trending</span>
+            <span>Popular</span>
+          </button>
+          <button
+            onClick={() => setFilter('following')}
+            className={`flex items-center space-x-1 rounded-lg px-3 py-1.5 text-xs font-bold transition ${
+              filter === 'following'
+                ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-900 dark:text-white'
+                : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
+            }`}
+          >
+            <Users className="h-3.5 w-3.5" />
+            <span>Following Only</span>
           </button>
           <button
             onClick={() => setFilter('oldest')}
@@ -715,16 +872,40 @@ export default function Feed({
           </p>
         </div>
       ) : (
-        <div className="space-y-4">
+        <motion.div
+          variants={feedContainerVariants}
+          initial="hidden"
+          animate="show"
+          className="space-y-4"
+        >
           {posts.map((post) => {
+            const postReactions = post.reactions || { like: [], heart: [], fire: [], laugh: [] };
+            const hasReactedLike = (postReactions.like || []).includes(currentUser.id);
+            const hasReactedHeart = (postReactions.heart || []).includes(currentUser.id);
+            const hasReactedFire = (postReactions.fire || []).includes(currentUser.id);
+            const hasReactedLaugh = (postReactions.laugh || []).includes(currentUser.id);
+
+            const totalReactions = 
+              (postReactions.like || []).length +
+              (postReactions.heart || []).length +
+              (postReactions.fire || []).length +
+              (postReactions.laugh || []).length;
+
+            const activeEmojis = [];
+            if ((postReactions.like || []).length > 0) activeEmojis.push("👍");
+            if ((postReactions.heart || []).length > 0) activeEmojis.push("❤️");
+            if ((postReactions.fire || []).length > 0) activeEmojis.push("🔥");
+            if ((postReactions.laugh || []).length > 0) activeEmojis.push("😂");
+
             const hasLiked = post.likes.includes(currentUser.id);
             const isBookmarked = currentUser.bookmarks.includes(post.id);
             const isOwner = post.userId === currentUser.id;
             const isCommentsActive = activeCommentsPostId === post.id;
 
             return (
-              <div
+              <motion.div
                 key={post.id}
+                variants={feedItemVariants}
                 className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900 transition hover:border-gray-200 dark:hover:border-gray-800/80"
               >
                 {/* Author Metadata Header */}
@@ -755,9 +936,28 @@ export default function Feed({
                           </span>
                         )}
                       </div>
-                      <span className="text-[10px] text-gray-400 dark:text-gray-500">
-                        {formatPostTime(post.createdAt)}
-                      </span>
+                      <div className="flex items-center space-x-1.5 text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">
+                        <span>{formatPostTime(post.createdAt)}</span>
+                        <span>•</span>
+                        {(!post.visibility || post.visibility === 'public') && (
+                          <span className="flex items-center space-x-0.5" title="Public: Anyone can view">
+                            <Globe className="h-3 w-3 text-gray-400 dark:text-gray-500" />
+                            <span className="text-[9px] font-medium">Public</span>
+                          </span>
+                        )}
+                        {post.visibility === 'followers' && (
+                          <span className="flex items-center space-x-0.5" title="Followers Only: Only your followers can view">
+                            <Users className="h-3 w-3 text-emerald-500 shrink-0" />
+                            <span className="text-[9px] font-semibold text-emerald-600 dark:text-emerald-400">Followers</span>
+                          </span>
+                        )}
+                        {post.visibility === 'private' && (
+                          <span className="flex items-center space-x-0.5" title="Private: Only you can view">
+                            <Lock className="h-3 w-3 text-amber-500 shrink-0" />
+                            <span className="text-[9px] font-semibold text-amber-600 dark:text-amber-400">Private</span>
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
 
@@ -789,13 +989,115 @@ export default function Feed({
                   </p>
                 </div>
 
+                {/* Poll Component */}
+                {post.poll && (
+                  <div className="px-4 pb-4 pt-1 animate-fade-in">
+                    <div className="rounded-2xl border border-pink-100/60 bg-pink-50/10 p-4 dark:border-pink-950/20 dark:bg-pink-950/5 space-y-3.5">
+                      <div className="flex items-center space-x-2">
+                        <span className="flex h-5 w-5 items-center justify-center rounded-lg bg-pink-100 text-pink-600 dark:bg-pink-950/50 dark:text-pink-400">
+                          <BarChart3 className="h-3.5 w-3.5" />
+                        </span>
+                        <h4 className="text-sm font-semibold text-gray-900 dark:text-white leading-tight">
+                          {post.poll.question}
+                        </h4>
+                      </div>
+
+                      {/* Options List */}
+                      <div className="space-y-2.5">
+                        {(() => {
+                          const totalVotes = post.poll.options.reduce((acc, opt) => acc + (opt.votes || []).length, 0);
+                          const hasVoted = post.poll.options.some(opt => (opt.votes || []).includes(currentUser.id));
+
+                          return post.poll.options.map((opt) => {
+                            const optionVotes = (opt.votes || []).length;
+                            const isUserSelection = (opt.votes || []).includes(currentUser.id);
+                            const percent = totalVotes > 0 ? Math.round((optionVotes / totalVotes) * 100) : 0;
+
+                            return (
+                              <button
+                                key={opt.id}
+                                onClick={() => handleVotePoll(post.id, opt.id)}
+                                className="relative w-full overflow-hidden rounded-xl border border-zinc-150 bg-white p-3.5 text-left transition hover:border-indigo-500/50 dark:border-zinc-800/85 dark:bg-zinc-900 text-xs font-semibold group cursor-pointer"
+                              >
+                                {/* Animated Visual Progress Bar Layer */}
+                                <div 
+                                  className={`absolute left-0 top-0 bottom-0 transition-all duration-500 ${
+                                    isUserSelection 
+                                      ? 'bg-indigo-500/10 dark:bg-indigo-500/15' 
+                                      : 'bg-zinc-100 dark:bg-zinc-800/60'
+                                  }`}
+                                  style={{ width: `${percent}%` }}
+                                />
+
+                                {/* Option Label & Info */}
+                                <div className="relative z-10 flex items-center justify-between space-x-2">
+                                  <div className="flex items-center space-x-2">
+                                    <div className={`flex h-4 w-4 items-center justify-center rounded-full border transition ${
+                                      isUserSelection 
+                                        ? 'border-indigo-600 bg-indigo-600 text-white' 
+                                        : 'border-zinc-300 dark:border-zinc-750'
+                                    }`}>
+                                      {isUserSelection && (
+                                        <svg className="h-2.5 w-2.5 stroke-white" fill="none" viewBox="0 0 24 24" strokeWidth="4">
+                                          <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                                        </svg>
+                                      )}
+                                    </div>
+                                    <span className={`font-semibold ${
+                                      isUserSelection 
+                                        ? 'text-indigo-600 dark:text-indigo-400 font-bold' 
+                                        : 'text-gray-800 dark:text-zinc-200'
+                                    }`}>
+                                      {opt.text}
+                                    </span>
+                                  </div>
+
+                                  <div className="flex items-center space-x-2 text-right">
+                                    <span className="text-[10px] text-gray-400 dark:text-gray-500 font-mono">
+                                      {optionVotes} {optionVotes === 1 ? 'vote' : 'votes'}
+                                    </span>
+                                    <span className="font-bold text-gray-900 dark:text-white font-mono min-w-[28px]">
+                                      {percent}%
+                                    </span>
+                                  </div>
+                                </div>
+                              </button>
+                            );
+                          });
+                        })()}
+                      </div>
+
+                      {/* Poll Summary Footer */}
+                      <div className="flex items-center justify-between text-[10px] text-gray-400 dark:text-gray-500 font-medium">
+                        <span>
+                          {(() => {
+                            const totalVotes = post.poll.options.reduce((acc, opt) => acc + (opt.votes || []).length, 0);
+                            return `${totalVotes} ${totalVotes === 1 ? 'total vote' : 'total votes'}`;
+                          })()}
+                        </span>
+                        <span className="flex items-center space-x-1">
+                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                          <span>Interactive Poll</span>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Custom Multi-Media Gallery Component */}
                 <PostMedia post={post} />
 
                 {/* Quick Interactive Statistics Row */}
                 <div className="flex items-center justify-between px-4 py-2 text-[11px] text-gray-400 dark:text-gray-500 border-b border-gray-50 dark:border-gray-800/40">
-                  <span className="hover:underline cursor-pointer">
-                    {post.likes.length} likes
+                  <span className="hover:underline cursor-pointer flex items-center space-x-1">
+                    {activeEmojis.length > 0 && (
+                      <span className="flex items-center -space-x-1 text-[13px] mr-1">
+                        {activeEmojis.map((emoji, idx) => (
+                          <span key={idx} className="inline-block transform hover:scale-110 transition">{emoji}</span>
+                        ))}
+                      </span>
+                    )}
+                    <span>{totalReactions} {totalReactions === 1 ? 'reaction' : 'reactions'}</span>
                   </span>
                   <div className="flex space-x-3">
                     <span>{post.comments.length} comments</span>
@@ -805,17 +1107,64 @@ export default function Feed({
 
                 {/* Footer Operations Actions Bar */}
                 <div className="flex items-center justify-between px-2 py-1.5 bg-gray-50/50 dark:bg-gray-900/40">
-                  <button
-                    onClick={() => handleLikePost(post.id)}
-                    className={`flex items-center space-x-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold transition ${
-                      hasLiked
-                        ? 'text-rose-500 bg-rose-50/60 dark:bg-rose-950/20'
-                        : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'
-                    }`}
-                  >
-                    <Heart className={`h-4.5 w-4.5 ${hasLiked ? 'fill-rose-500 text-rose-500' : ''}`} />
-                    <span className="hidden sm:inline">{hasLiked ? 'Liked' : 'Like'}</span>
-                  </button>
+                  {/* Reactions Pill List */}
+                  <div className="flex items-center space-x-1 sm:space-x-1.5">
+                    {/* Like 👍 */}
+                    <button
+                      onClick={() => handleReactPost(post.id, 'like')}
+                      className={`flex items-center space-x-1 rounded-xl px-2.5 py-1 text-xs font-semibold transition ${
+                        hasReactedLike
+                          ? 'bg-blue-100/80 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400 font-bold'
+                          : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'
+                      }`}
+                      title="Like"
+                    >
+                      <span className="text-sm">👍</span>
+                      <span className="text-[10px]">{(postReactions.like || []).length}</span>
+                    </button>
+
+                    {/* Love ❤️ */}
+                    <button
+                      onClick={() => handleReactPost(post.id, 'heart')}
+                      className={`flex items-center space-x-1 rounded-xl px-2.5 py-1 text-xs font-semibold transition ${
+                        hasReactedHeart
+                          ? 'bg-rose-100/80 text-rose-600 dark:bg-rose-950/50 dark:text-rose-400 font-bold'
+                          : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'
+                      }`}
+                      title="Love"
+                    >
+                      <span className="text-sm">❤️</span>
+                      <span className="text-[10px]">{(postReactions.heart || []).length}</span>
+                    </button>
+
+                    {/* Fire 🔥 */}
+                    <button
+                      onClick={() => handleReactPost(post.id, 'fire')}
+                      className={`flex items-center space-x-1 rounded-xl px-2.5 py-1 text-xs font-semibold transition ${
+                        hasReactedFire
+                          ? 'bg-amber-100/80 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400 font-bold'
+                          : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'
+                      }`}
+                      title="Fire"
+                    >
+                      <span className="text-sm">🔥</span>
+                      <span className="text-[10px]">{(postReactions.fire || []).length}</span>
+                    </button>
+
+                    {/* Laugh 😂 */}
+                    <button
+                      onClick={() => handleReactPost(post.id, 'laugh')}
+                      className={`flex items-center space-x-1 rounded-xl px-2.5 py-1 text-xs font-semibold transition ${
+                        hasReactedLaugh
+                          ? 'bg-yellow-100/80 text-yellow-600 dark:bg-yellow-950/50 dark:text-yellow-400 font-bold'
+                          : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'
+                      }`}
+                      title="Laugh"
+                    >
+                      <span className="text-sm">😂</span>
+                      <span className="text-[10px]">{(postReactions.laugh || []).length}</span>
+                    </button>
+                  </div>
 
                   <button
                     onClick={() => setActiveCommentsPostId(isCommentsActive ? null : post.id)}
@@ -850,17 +1199,19 @@ export default function Feed({
                     )}
                   </button>
 
-                  <button
+                  <motion.button
+                    whileTap={{ scale: 0.9 }}
+                    whileHover={{ scale: 1.05 }}
                     onClick={() => handleBookmarkPost(post.id)}
                     className={`flex items-center space-x-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold transition ${
                       isBookmarked
-                        ? 'text-blue-500 bg-blue-50/60 dark:bg-blue-950/20'
+                        ? 'text-blue-500 bg-blue-50/60 dark:bg-blue-950/20 shadow-sm'
                         : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'
                     }`}
                   >
                     {isBookmarked ? (
                       <>
-                        <BookmarkCheck className="h-4.5 w-4.5 text-blue-500 fill-blue-500" />
+                        <BookmarkCheck className="h-4.5 w-4.5 text-blue-500 fill-blue-500 animate-pulse" />
                         <span className="hidden sm:inline">Saved</span>
                       </>
                     ) : (
@@ -869,7 +1220,7 @@ export default function Feed({
                         <span className="hidden sm:inline">Save</span>
                       </>
                     )}
-                  </button>
+                  </motion.button>
                 </div>
 
                 {/* Expandable Comments Segment Drawer */}
@@ -938,10 +1289,10 @@ export default function Feed({
                     </div>
                   </div>
                 )}
-              </div>
+              </motion.div>
             );
           })}
-        </div>
+        </motion.div>
       )}
 
       {/* Post Share Options Dialog Modal */}
@@ -1090,6 +1441,26 @@ export default function Feed({
           </div>
         </div>
       )}
+
+      {/* Toast Notification */}
+      <AnimatePresence>
+        {toastMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: 50, scale: 0.9, x: '-50%' }}
+            animate={{ opacity: 1, y: 0, scale: 1, x: '-50%' }}
+            exit={{ opacity: 0, y: 20, scale: 0.95, x: '-50%' }}
+            transition={{ type: 'spring', stiffness: 350, damping: 25 }}
+            className="fixed bottom-6 left-1/2 z-50 flex items-center space-x-2 rounded-full px-4.5 py-3 shadow-xl backdrop-blur-md bg-zinc-950/90 text-white border border-zinc-800/80 text-xs font-semibold"
+          >
+            {toastType === 'success' ? (
+              <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0 animate-bounce" />
+            ) : (
+              <Bookmark className="h-4 w-4 text-indigo-400 shrink-0" />
+            )}
+            <span>{toastMessage}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

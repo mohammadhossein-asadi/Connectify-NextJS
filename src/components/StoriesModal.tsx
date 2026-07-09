@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Story, User } from '../types';
 import { X, ChevronLeft, ChevronRight, Clock, Eye, Trash2, Send } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 
 interface StoriesModalProps {
   stories: Story[];
@@ -23,6 +24,7 @@ export default function StoriesModal({
   const [sendingReply, setSendingReply] = useState(false);
   const [replySuccess, setReplySuccess] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
+  const [floatingEmojis, setFloatingEmojis] = useState<{ id: string; emoji: string; x: number }[]>([]);
 
   const currentStory = stories[currentIndex];
 
@@ -124,6 +126,60 @@ export default function StoriesModal({
     }
   };
 
+  const triggerFloatingEmoji = (emoji: string) => {
+    const id = Math.random().toString();
+    const x = Math.random() * 60 + 20; // x coordinate percentage
+    setFloatingEmojis((prev) => [...prev, { id, emoji, x }]);
+    setTimeout(() => {
+      setFloatingEmojis((prev) => prev.filter((item) => item.id !== id));
+    }, 1500);
+  };
+
+  const handleStoryReact = async (emoji: string) => {
+    if (!currentStory) return;
+    triggerFloatingEmoji(emoji);
+
+    try {
+      setStories((prevStories) =>
+        prevStories.map((s) => {
+          if (s.id === currentStory.id) {
+            const nextReactions = s.reactions ? [...s.reactions] : [];
+            const existingIdx = nextReactions.findIndex(
+              (r) => r.userId === currentUser.id && r.emoji === emoji
+            );
+            if (existingIdx !== -1) {
+              nextReactions.splice(existingIdx, 1);
+            } else {
+              nextReactions.push({
+                id: 'temp-' + Math.random().toString(),
+                emoji,
+                userId: currentUser.id,
+                username: currentUser.username,
+              });
+            }
+            return { ...s, reactions: nextReactions };
+          }
+          return s;
+        })
+      );
+
+      const res = await fetch(`/api/stories/${currentStory.id}/react`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: currentUser.id, emoji }),
+      });
+
+      if (!res.ok) throw new Error('Failed to react to story');
+      const updatedStory = await res.json();
+
+      setStories((prevStories) =>
+        prevStories.map((s) => (s.id === currentStory.id ? updatedStory : s))
+      );
+    } catch (err) {
+      console.error('Failed to react to story:', err);
+    }
+  };
+
   if (!currentStory) return null;
 
   // Format creation time relative to now
@@ -195,13 +251,72 @@ export default function StoriesModal({
           <div onClick={handleNext} className="w-2/3 h-full cursor-e-resize" />
         </div>
 
+        {/* Floating Emojis */}
+        <div className="absolute inset-0 pointer-events-none z-30 overflow-hidden">
+          <AnimatePresence>
+            {floatingEmojis.map((item) => (
+              <motion.div
+                key={item.id}
+                initial={{ y: '100%', x: `${item.x}%`, scale: 0.5, opacity: 0 }}
+                animate={{
+                  y: ['90%', '15%', '-10%'],
+                  x: [
+                    `${item.x}%`,
+                    `${item.x + (Math.random() * 20 - 10)}%`,
+                    `${item.x + (Math.random() * 40 - 20)}%`
+                  ],
+                  scale: [0.8, 1.4, 1],
+                  opacity: [0, 1, 1, 0],
+                }}
+                transition={{ duration: 1.5, ease: 'easeOut' }}
+                exit={{ opacity: 0 }}
+                className="absolute text-4xl select-none"
+                style={{ bottom: 0 }}
+              >
+                {item.emoji}
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </div>
+
         {/* Story Media */}
-        <div className="flex-1 flex items-center justify-center bg-zinc-950">
+        <div className="flex-1 flex items-center justify-center bg-zinc-950 relative">
           <img
             src={currentStory.image}
             alt="Active user story image"
             className="max-h-full max-w-full object-contain"
           />
+
+          {/* Active Reactions Pill Tally */}
+          {currentStory.reactions && currentStory.reactions.length > 0 && (
+            <div className="absolute bottom-28 left-4 z-20 flex flex-wrap gap-1.5 max-w-[80%] pointer-events-auto">
+              {Object.entries(
+                currentStory.reactions.reduce((acc, curr) => {
+                  acc[curr.emoji] = (acc[curr.emoji] || []).concat(curr.username);
+                  return acc;
+                }, {} as Record<string, string[]>)
+              ).map(([emoji, usernames]) => {
+                const userHasReacted = currentStory.reactions?.some(
+                  (r) => r.userId === currentUser.id && r.emoji === emoji
+                );
+                return (
+                  <button
+                    key={emoji}
+                    onClick={() => handleStoryReact(emoji)}
+                    className={`flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-xs font-bold backdrop-blur-md transition-all border duration-150 cursor-pointer ${
+                      userHasReacted
+                        ? 'bg-indigo-600/85 text-white border-indigo-400/50 shadow-md'
+                        : 'bg-black/50 text-white/95 border-white/10 hover:bg-black/70'
+                    }`}
+                    title={`Reacted by: ${usernames.join(', ')}`}
+                  >
+                    <span className="text-sm">{emoji}</span>
+                    <span className="text-[10px] font-mono font-medium">{usernames.length}</span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* Desktop Controls (Arrows) */}
@@ -229,16 +344,25 @@ export default function StoriesModal({
             <div className="space-y-3.5">
               {/* Quick Reaction Emojis */}
               <div className="flex justify-center space-x-4">
-                {['❤️', '😂', '😮', '😢', '🔥', '👏'].map((emoji) => (
-                  <button
-                    key={emoji}
-                    onClick={() => handleSendReply(emoji)}
-                    className="text-2xl transition hover:scale-125 active:scale-90 cursor-pointer duration-150"
-                    title={`React with ${emoji}`}
-                  >
-                    {emoji}
-                  </button>
-                ))}
+                {['❤️', '😂', '😮', '😢', '🔥', '👏'].map((emoji) => {
+                  const hasReacted = currentStory.reactions?.some(
+                    (r) => r.userId === currentUser.id && r.emoji === emoji
+                  );
+                  return (
+                    <button
+                      key={emoji}
+                      onClick={() => handleStoryReact(emoji)}
+                      className={`text-2xl transition hover:scale-130 active:scale-90 cursor-pointer duration-150 ${
+                        hasReacted 
+                          ? 'scale-115 filter drop-shadow-[0_0_8px_rgba(255,255,255,0.6)]' 
+                          : 'opacity-80 hover:opacity-100'
+                      }`}
+                      title={`React with ${emoji}`}
+                    >
+                      {emoji}
+                    </button>
+                  );
+                })}
               </div>
 
               {/* Reply Input Bar */}

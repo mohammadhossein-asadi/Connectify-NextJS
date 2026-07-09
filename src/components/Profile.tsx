@@ -20,7 +20,8 @@ import {
   Play,
   FileText,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Clock
 } from 'lucide-react';
 import Settings from './Settings';
 
@@ -135,6 +136,25 @@ export default function Profile({
   const [commentText, setCommentText] = useState('');
   const [commentLoading, setCommentLoading] = useState(false);
   
+  const [profileViewTab, setProfileViewTab] = useState<'published' | 'scheduled'>('published');
+  const [scheduledPosts, setScheduledPosts] = useState<Post[]>([]);
+
+  const fetchScheduledPosts = async () => {
+    try {
+      const res = await fetch(`/api/posts?userId=${currentUser.id}&scheduledOnly=true`);
+      if (res.ok) {
+        const data = await res.json();
+        setScheduledPosts(data);
+      }
+    } catch (err) {
+      console.error('Error fetching scheduled posts:', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchScheduledPosts();
+  }, [posts, currentUser.id]);
+
   // Follower / Following Lists Modal States
   const [showFollowersModal, setShowFollowersModal] = useState(false);
   const [showFollowingModal, setShowFollowingModal] = useState(false);
@@ -408,93 +428,216 @@ export default function Profile({
       {/* Main Profile Content Panel */}
       {activeSubTab === 'posts' ? (
         <div className="space-y-4">
-          <div className="flex items-center space-x-2 border-b border-gray-100 pb-3 dark:border-gray-800">
-            <GridIcon className="h-4.5 w-4.5 text-indigo-500" />
-            <h2 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider">My Published Posts</h2>
+          {/* Sub Tab Navigation */}
+          <div className="flex space-x-2 border-b border-gray-100 dark:border-gray-800 pb-1.5">
+            <button
+              onClick={() => setProfileViewTab('published')}
+              className={`flex items-center space-x-1.5 pb-2 border-b-2 px-4 text-xs font-bold transition cursor-pointer ${
+                profileViewTab === 'published'
+                  ? 'border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400'
+                  : 'border-transparent text-gray-400 hover:text-gray-700 dark:text-zinc-500 dark:hover:text-zinc-300'
+              }`}
+            >
+              <GridIcon className="h-4 w-4" />
+              <span>Published ({myPosts.length})</span>
+            </button>
+            <button
+              onClick={() => setProfileViewTab('scheduled')}
+              className={`flex items-center space-x-1.5 pb-2 border-b-2 px-4 text-xs font-bold transition cursor-pointer ${
+                profileViewTab === 'scheduled'
+                  ? 'border-amber-500 text-amber-600 dark:border-amber-400 dark:text-amber-400'
+                  : 'border-transparent text-gray-400 hover:text-gray-700 dark:text-zinc-500 dark:hover:text-zinc-300'
+              }`}
+            >
+              <Clock className="h-4 w-4" />
+              <span>Scheduled Queue ({scheduledPosts.length})</span>
+            </button>
           </div>
 
-          {myPosts.length === 0 ? (
-            <div className="rounded-2xl border border-gray-100 bg-white p-12 text-center dark:border-gray-800 dark:bg-gray-900 shadow-xs">
-              <GridIcon className="mx-auto h-12 w-12 text-zinc-300 dark:text-zinc-700 mb-3" />
-              <h4 className="text-sm font-bold text-gray-800 dark:text-zinc-200">You haven't posted anything yet</h4>
-              <p className="text-xs text-gray-400 dark:text-zinc-500 mt-1 max-w-xs mx-auto">
-                Share what is on your mind, upload photos or videos, and interact with the coder community!
-              </p>
-              <button
-                onClick={() => setActiveTab('feed')}
-                className="mt-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-4 py-2.5 transition shadow-md cursor-pointer"
-              >
-                Compose My First Post
-              </button>
-            </div>
-          ) : (
-            /* Posts Grid (3 Columns Connectify Grid format) */
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3.5">
-              {myPosts.map((post) => {
-                const hasMedia = post.image || post.video || (post.images && post.images.length > 0) || (post.media && post.media.length > 0);
-                const displayImage = post.media?.find(m => m.type === 'image')?.url || post.images?.[0] || post.image;
-                return (
-                  <div
-                    key={post.id}
-                    onClick={() => setSelectedPost(post)}
-                    className="group relative aspect-square rounded-2xl bg-zinc-100 dark:bg-zinc-850 overflow-hidden cursor-pointer border border-zinc-200/40 dark:border-zinc-800/40 shadow-xs hover:shadow-md transition duration-300"
-                  >
-                    {/* Visual Preview */}
-                    {displayImage && (
-                      <img 
-                        src={displayImage} 
-                        alt="Post media" 
-                        className="h-full w-full object-cover group-hover:scale-105 transition duration-500"
-                      />
-                    )}
-
-                    {post.video && (
-                      <div className="relative h-full w-full">
-                        <video 
-                          src={post.video} 
+          {profileViewTab === 'published' ? (
+            myPosts.length === 0 ? (
+              <div className="rounded-2xl border border-gray-100 bg-white p-12 text-center dark:border-gray-800 dark:bg-gray-900 shadow-xs">
+                <GridIcon className="mx-auto h-12 w-12 text-zinc-300 dark:text-zinc-700 mb-3" />
+                <h4 className="text-sm font-bold text-gray-800 dark:text-zinc-200">You haven't posted anything yet</h4>
+                <p className="text-xs text-gray-400 dark:text-zinc-500 mt-1 max-w-xs mx-auto">
+                  Share what is on your mind, upload photos or videos, and interact with the coder community!
+                </p>
+                <button
+                  onClick={() => setActiveTab('feed')}
+                  className="mt-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-4 py-2.5 transition shadow-md cursor-pointer"
+                >
+                  Compose My First Post
+                </button>
+              </div>
+            ) : (
+              /* Posts Grid (3 Columns Connectify Grid format) */
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3.5">
+                {myPosts.map((post) => {
+                  const hasMedia = post.image || post.video || (post.images && post.images.length > 0) || (post.media && post.media.length > 0);
+                  const displayImage = post.media?.find(m => m.type === 'image')?.url || post.images?.[0] || post.image;
+                  return (
+                    <div
+                      key={post.id}
+                      onClick={() => setSelectedPost(post)}
+                      className="group relative aspect-square rounded-2xl bg-zinc-100 dark:bg-zinc-850 overflow-hidden cursor-pointer border border-zinc-200/40 dark:border-zinc-800/40 shadow-xs hover:shadow-md transition duration-300"
+                    >
+                      {/* Visual Preview */}
+                      {displayImage && (
+                        <img 
+                          src={displayImage} 
+                          alt="Post media" 
                           className="h-full w-full object-cover group-hover:scale-105 transition duration-500"
-                          muted
-                          playsInline
                         />
-                        <div className="absolute inset-0 bg-black/10 flex items-center justify-center">
-                          <Play className="h-8 w-8 text-white opacity-85 fill-white" />
+                      )}
+
+                      {post.video && (
+                        <div className="relative h-full w-full">
+                          <video 
+                            src={post.video} 
+                            className="h-full w-full object-cover group-hover:scale-105 transition duration-500"
+                            muted
+                            playsInline
+                          />
+                          <div className="absolute inset-0 bg-black/10 flex items-center justify-center">
+                            <Play className="h-8 w-8 text-white opacity-85 fill-white" />
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
 
-                    {!hasMedia && (
-                      <div className="h-full w-full p-4 flex flex-col justify-between bg-white dark:bg-gray-900 group-hover:bg-zinc-50 dark:group-hover:bg-zinc-850 transition duration-300">
-                        <p className="text-xs text-gray-700 dark:text-gray-300 font-sans line-clamp-4 leading-relaxed font-medium">
-                          {post.content}
-                        </p>
-                        <div className="flex items-center space-x-1.5 text-[9px] text-zinc-400 dark:text-zinc-500 font-bold uppercase tracking-wider">
-                          <FileText className="h-3 w-3 text-indigo-500" />
-                          <span>Text Post</span>
+                      {!hasMedia && (
+                        <div className="h-full w-full p-4 flex flex-col justify-between bg-white dark:bg-gray-900 group-hover:bg-zinc-50 dark:group-hover:bg-zinc-850 transition duration-300">
+                          <p className="text-xs text-gray-700 dark:text-gray-300 font-sans line-clamp-4 leading-relaxed font-medium">
+                            {post.content}
+                          </p>
+                          <div className="flex items-center space-x-1.5 text-[9px] text-zinc-400 dark:text-zinc-500 font-bold uppercase tracking-wider">
+                            <FileText className="h-3 w-3 text-indigo-500" />
+                            <span>Text Post</span>
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
 
-                    {/* Quick overlay indicator on media */}
-                    {hasMedia && (
-                      <div className="absolute top-2.5 right-2.5 bg-black/50 backdrop-blur-md p-1.5 rounded-full text-white transition group-hover:opacity-0">
-                        {post.video ? <Play className="h-3 w-3 fill-white" /> : <GridIcon className="h-3 w-3" />}
-                      </div>
-                    )}
+                      {/* Quick overlay indicator on media */}
+                      {hasMedia && (
+                        <div className="absolute top-2.5 right-2.5 bg-black/50 backdrop-blur-md p-1.5 rounded-full text-white transition group-hover:opacity-0">
+                          {post.video ? <Play className="h-3 w-3 fill-white" /> : <GridIcon className="h-3 w-3" />}
+                        </div>
+                      )}
 
-                    {/* Hover Engagement Glass Overlay */}
-                    <div className="absolute inset-0 bg-black/45 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center space-x-5 text-white backdrop-blur-xs">
-                      <div className="flex items-center space-x-1">
-                        <Heart className="h-4.5 w-4.5 fill-white text-white scale-90 group-hover:scale-100 transition duration-300" />
-                        <span className="text-xs font-bold">{post.likes.length}</span>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <MessageCircle className="h-4.5 w-4.5 fill-white text-white scale-90 group-hover:scale-100 transition duration-300" />
-                        <span className="text-xs font-bold">{post.comments.length}</span>
+                      {/* Hover Engagement Glass Overlay */}
+                      <div className="absolute inset-0 bg-black/45 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center space-x-5 text-white backdrop-blur-xs">
+                        <div className="flex items-center space-x-1">
+                          <Heart className="h-4.5 w-4.5 fill-white text-white scale-90 group-hover:scale-100 transition duration-300" />
+                          <span className="text-xs font-bold">{post.likes.length}</span>
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          <MessageCircle className="h-4.5 w-4.5 fill-white text-white scale-90 group-hover:scale-100 transition duration-300" />
+                          <span className="text-xs font-bold">{post.comments.length}</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
+            )
+          ) : (
+            /* Render scheduled posts queue list */
+            <div className="space-y-4">
+              {scheduledPosts.length === 0 ? (
+                <div className="rounded-2xl border border-gray-100 bg-white p-12 text-center dark:border-gray-800 dark:bg-gray-900 shadow-xs">
+                  <Clock className="mx-auto h-12 w-12 text-zinc-300 dark:text-zinc-700 mb-3 animate-pulse" />
+                  <h4 className="text-sm font-bold text-gray-800 dark:text-zinc-200">Your scheduled queue is empty</h4>
+                  <p className="text-xs text-gray-400 dark:text-zinc-500 mt-1 max-w-xs mx-auto">
+                    Compose a post and use the scheduling clock to schedule it for future publication.
+                  </p>
+                  <button
+                    onClick={() => setActiveTab('feed')}
+                    className="mt-4 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold px-4 py-2.5 transition shadow-md cursor-pointer animate-bounce"
+                  >
+                    Schedule a Post Now
+                  </button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 gap-4">
+                  {scheduledPosts.map((post) => {
+                    const scheduledDate = new Date(post.scheduledAt || post.createdAt);
+                    const timeLeftMs = scheduledDate.getTime() - Date.now();
+                    let timeLeftStr = '';
+                    if (timeLeftMs > 0) {
+                      const mins = Math.floor(timeLeftMs / 60000);
+                      const hrs = Math.floor(mins / 60);
+                      const days = Math.floor(hrs / 24);
+                      if (days > 0) timeLeftStr = `in ${days} day${days > 1 ? 's' : ''}`;
+                      else if (hrs > 0) timeLeftStr = `in ${hrs} hour${hrs > 1 ? 's' : ''}`;
+                      else timeLeftStr = `in ${mins} minute${mins > 1 ? 's' : ''}`;
+                    } else {
+                      timeLeftStr = 'due now';
+                    }
+
+                    return (
+                      <div key={post.id} className="rounded-2xl border border-gray-100 bg-white p-4.5 dark:border-gray-800 dark:bg-gray-900 shadow-xs flex flex-col md:flex-row justify-between gap-4 animate-fade-in hover:border-gray-200 dark:hover:border-gray-700 transition">
+                        <div className="space-y-3 flex-1 min-w-0">
+                          <div className="flex items-center space-x-2">
+                            <span className="flex h-5 items-center justify-center rounded-lg bg-amber-50 dark:bg-amber-950/30 text-[10px] font-bold text-amber-600 dark:text-amber-400 border border-amber-100/50 px-2">
+                              🕒 Scheduled {timeLeftStr}
+                            </span>
+                            <span className="text-[11px] text-gray-400 dark:text-gray-500 font-medium">
+                              {scheduledDate.toLocaleString()}
+                            </span>
+                          </div>
+                          
+                          <p className="text-xs text-gray-800 dark:text-gray-200 leading-relaxed font-sans whitespace-pre-wrap break-words">
+                            {post.content || <span className="italic text-gray-400">Media only post</span>}
+                          </p>
+
+                          {/* Mini Gallery/Media Preview */}
+                          {(post.media || post.images || post.image || post.video) && (
+                            <div className="flex gap-2 overflow-x-auto py-1">
+                              {post.media?.map((m, idx) => (
+                                <div key={idx} className="h-14 w-14 rounded-lg bg-gray-50 dark:bg-gray-800 overflow-hidden shrink-0 border border-gray-100 dark:border-gray-800">
+                                  {m.type === 'video' ? (
+                                    <div className="h-full w-full bg-black flex items-center justify-center">
+                                      <Play className="h-4 w-4 text-white fill-white" />
+                                    </div>
+                                  ) : (
+                                    <img src={m.url} className="h-full w-full object-cover" />
+                                  )}
+                                </div>
+                              ))}
+                              {!post.media && post.images?.map((img, idx) => (
+                                <div key={idx} className="h-14 w-14 rounded-lg bg-gray-50 dark:bg-gray-800 overflow-hidden shrink-0 border border-gray-100 dark:border-gray-800">
+                                  <img src={img} className="h-full w-full object-cover" />
+                                </div>
+                              ))}
+                              {!post.media && !post.images && post.image && (
+                                <div className="h-14 w-14 rounded-lg bg-gray-50 dark:bg-gray-800 overflow-hidden shrink-0 border border-gray-100 dark:border-gray-800">
+                                  <img src={post.image} className="h-full w-full object-cover" />
+                                </div>
+                              )}
+                              {!post.media && !post.images && post.video && (
+                                <div className="h-14 w-14 rounded-lg bg-gray-50 dark:bg-gray-800 overflow-hidden shrink-0 border border-gray-100 dark:border-gray-800">
+                                  <div className="h-full w-full bg-black flex items-center justify-center">
+                                    <Play className="h-4 w-4 text-white fill-white" />
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex items-start justify-end gap-2 shrink-0">
+                          <button
+                            onClick={() => handleDeletePost(post.id)}
+                            className="flex items-center space-x-1 rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-400 dark:hover:bg-rose-950/70 text-xs font-bold px-3 py-1.5 transition shrink-0 cursor-pointer"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                            <span>Cancel Post</span>
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           )}
         </div>

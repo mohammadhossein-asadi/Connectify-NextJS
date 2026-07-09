@@ -25,6 +25,18 @@ export interface Comment {
   createdAt: string;
 }
 
+export interface PollOption {
+  id: string;
+  text: string;
+  votes: string[]; // user IDs who voted for this option
+}
+
+export interface Poll {
+  question: string;
+  options: PollOption[];
+  expiresAt?: string;
+}
+
 export interface Post {
   id: string;
   userId: string;
@@ -37,10 +49,26 @@ export interface Post {
   images?: string[];
   media?: { url: string; type: 'image' | 'video' }[];
   likes: string[]; // user IDs
+  reactions?: {
+    like: string[];
+    heart: string[];
+    fire: string[];
+    laugh: string[];
+  };
   comments: Comment[];
   shares: number;
   hashtags: string[];
   createdAt: string;
+  scheduledAt?: string;
+  poll?: Poll;
+  visibility?: 'public' | 'followers' | 'private';
+}
+
+export interface StoryReaction {
+  id: string;
+  emoji: string;
+  userId: string;
+  username: string;
 }
 
 export interface Story {
@@ -51,6 +79,7 @@ export interface Story {
   image: string;
   createdAt: string;
   expiresAt: string;
+  reactions?: StoryReaction[];
 }
 
 export interface Notification {

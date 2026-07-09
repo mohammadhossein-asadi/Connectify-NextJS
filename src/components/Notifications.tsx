@@ -165,11 +165,42 @@ export default function Notifications({
 
       {/* List Container */}
       {notifications.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-gray-200 p-12 text-center dark:border-gray-800">
-          <BellOff className="mx-auto h-12 w-12 text-gray-300 dark:text-gray-700 mb-2" />
-          <h3 className="text-sm font-semibold text-gray-950 dark:text-white">Nothing to show</h3>
-          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-            No notifications yet! Once peers interact with your content, they will show up here.
+        <div className="rounded-2xl border border-dashed border-gray-200 p-12 text-center dark:border-gray-800 bg-gray-50/30 dark:bg-gray-900/10">
+          {/* Decorative Illustration */}
+          <div className="relative mx-auto w-36 h-36 flex items-center justify-center mb-6">
+            {/* Background Glow */}
+            <div className="absolute inset-0 bg-indigo-100/40 dark:bg-indigo-950/20 rounded-full blur-2xl animate-pulse" />
+            <div className="absolute w-28 h-28 rounded-full border border-indigo-100/60 dark:border-indigo-900/40 animate-spin" style={{ animationDuration: '25s' }} />
+            <div className="absolute w-22 h-22 rounded-full border border-dashed border-blue-100/80 dark:border-blue-900/30" />
+
+            {/* Main Styled Bell icon floating */}
+            <div className="relative flex items-center justify-center w-16 h-16 bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200/50 dark:border-gray-700 z-10 animate-bounce" style={{ animationDuration: '3s' }}>
+              <BellRing className="h-8 w-8 text-blue-600 dark:text-blue-400 animate-pulse" />
+              
+              {/* Floating Little Red Badge */}
+              <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[9px] font-extrabold text-white ring-2 ring-white dark:ring-gray-900 animate-ping" />
+              <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[9px] font-extrabold text-white ring-2 ring-white dark:ring-gray-900">
+                0
+              </span>
+            </div>
+
+            {/* Small floating activity badges */}
+            <div className="absolute top-3 left-4 flex h-8 w-8 items-center justify-center rounded-xl bg-rose-50 text-rose-500 shadow-md border border-rose-100 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-900/30 -rotate-12 translate-y-2 opacity-80">
+              <Heart className="h-4 w-4 fill-current" />
+            </div>
+
+            <div className="absolute bottom-3 right-4 flex h-8 w-8 items-center justify-center rounded-xl bg-blue-50 text-blue-500 shadow-md border border-blue-100 dark:bg-blue-950/40 dark:text-blue-400 dark:border-blue-900/30 rotate-12 -translate-y-2 opacity-80">
+              <MessageSquare className="h-4 w-4" />
+            </div>
+
+            <div className="absolute bottom-12 left-2 flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-50 text-emerald-500 shadow-sm border border-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-900/30 -rotate-6 opacity-75">
+              <UserPlus className="h-3.5 w-3.5" />
+            </div>
+          </div>
+
+          <h3 className="text-base font-bold text-gray-950 dark:text-white">All caught up!</h3>
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 max-w-sm mx-auto leading-relaxed">
+            No active alerts or interactions yet. Once people view, like, comment, or mention you, we'll keep you posted right here!
           </p>
         </div>
       ) : (

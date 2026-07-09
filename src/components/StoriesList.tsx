@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { User, Story } from '../types';
-import { Plus, Camera, Image, X, Type, Palette } from 'lucide-react';
+import { Plus, Camera, Image, X, Type, Palette, Sparkles } from 'lucide-react';
+import ImageEditorModal from './ImageEditorModal';
 
 interface StoriesListProps {
   currentUser: User;
@@ -18,6 +19,7 @@ export default function StoriesList({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [previewStory, setPreviewStory] = useState<string | null>(null);
+  const [showEditor, setShowEditor] = useState(false);
   
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showTextStoryCreator, setShowTextStoryCreator] = useState(false);
@@ -478,12 +480,21 @@ export default function StoriesList({
             </div>
 
             {/* Content Preview */}
-            <div className="relative aspect-[9/16] bg-gray-950">
+            <div className="relative aspect-[9/16] bg-gray-950 group">
               <img
                 src={previewStory}
                 alt="Story draft preview"
                 className="h-full w-full object-contain"
               />
+              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+                <button
+                  onClick={() => setShowEditor(true)}
+                  className="flex items-center space-x-1.5 rounded-full bg-white/95 text-zinc-900 px-4 py-2.5 text-xs font-bold hover:bg-white hover:scale-105 active:scale-95 transition shadow-lg cursor-pointer"
+                >
+                  <Sparkles className="h-4 w-4 text-indigo-600 animate-pulse" />
+                  <span>Edit Photo & Effects</span>
+                </button>
+              </div>
             </div>
 
             {/* Actions */}
@@ -495,6 +506,13 @@ export default function StoriesList({
                 Cancel
               </button>
               <button
+                onClick={() => setShowEditor(true)}
+                className="flex items-center space-x-1 rounded-xl border border-indigo-200 bg-indigo-50/50 hover:bg-indigo-50 text-indigo-600 px-4 py-2 text-xs font-bold dark:border-indigo-900/40 dark:bg-indigo-950/20 dark:text-indigo-400 dark:hover:bg-indigo-950/40 cursor-pointer"
+              >
+                <Sparkles className="h-3.5 w-3.5" />
+                <span>Edit Effects</span>
+              </button>
+              <button
                 onClick={submitStory}
                 disabled={uploading}
                 className="rounded-xl bg-blue-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-blue-700 disabled:opacity-50"
@@ -504,6 +522,18 @@ export default function StoriesList({
             </div>
           </div>
         </div>
+      )}
+
+      {showEditor && previewStory && (
+        <ImageEditorModal
+          imageSrc={previewStory}
+          onSave={(editedDataUrl) => {
+            setPreviewStory(editedDataUrl);
+            setShowEditor(false);
+          }}
+          onClose={() => setShowEditor(false)}
+          title="Edit Story Photo"
+        />
       )}
     </div>
   );

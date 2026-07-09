@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { User, Post } from '../types';
-import { Bookmark, AlertCircle, BookmarkCheck, Star } from 'lucide-react';
+import { Bookmark, AlertCircle, BookmarkCheck, Star, Sparkles } from 'lucide-react';
 
 interface BookmarksProps {
   currentUser: User;
@@ -76,17 +76,60 @@ export default function Bookmarks({
           ))}
         </div>
       ) : bookmarkedPosts.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-gray-200 p-12 text-center dark:border-gray-800">
-          <BookmarkCheck className="mx-auto h-12 w-12 text-gray-300 dark:text-gray-700 mb-2" />
-          <h3 className="text-sm font-semibold text-gray-950 dark:text-white">Collection is empty</h3>
-          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
+        <div className="rounded-2xl border border-dashed border-gray-200 p-12 text-center dark:border-gray-800 bg-gray-50/30 dark:bg-gray-900/10">
+          {/* Decorative Illustration */}
+          <div className="relative mx-auto w-36 h-36 flex items-center justify-center mb-6">
+            {/* Background Glow & Pulsing Circles */}
+            <div className="absolute inset-0 bg-blue-100/40 dark:bg-blue-950/20 rounded-full blur-2xl animate-pulse" />
+            <div className="absolute w-28 h-28 rounded-full border border-blue-100/60 dark:border-blue-900/40 animate-spin" style={{ animationDuration: '20s' }} />
+            <div className="absolute w-20 h-20 rounded-full border border-dashed border-indigo-100/80 dark:border-indigo-900/30" />
+            
+            {/* Staggered Floating Cards */}
+            <div className="absolute w-14 h-16 bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 dark:border-gray-750 -rotate-12 translate-x-[-12px] translate-y-[-4px] opacity-60 flex flex-col p-2 space-y-1.5">
+              <div className="h-1.5 w-8 bg-gray-200 dark:bg-gray-700 rounded-full" />
+              <div className="h-1.5 w-6 bg-gray-150 dark:bg-gray-750 rounded-full" />
+              <div className="h-6 w-full bg-gray-50 dark:bg-gray-950/40 rounded-lg" />
+            </div>
+
+            <div className="absolute w-14 h-16 bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 dark:border-gray-750 rotate-12 translate-x-[12px] translate-y-[-4px] opacity-60 flex flex-col p-2 space-y-1.5">
+              <div className="h-1.5 w-7 bg-gray-200 dark:bg-gray-700 rounded-full" />
+              <div className="h-1.5 w-5 bg-gray-150 dark:bg-gray-750 rounded-full" />
+              <div className="h-6 w-full bg-gray-50 dark:bg-gray-950/40 rounded-lg" />
+            </div>
+
+            {/* Central Main Card with Bookmark Ribbon */}
+            <div className="relative w-16 h-20 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200/50 dark:border-gray-700 flex flex-col justify-between p-2.5 z-10 hover:scale-105 transition-transform duration-300">
+              <div className="flex items-start justify-between">
+                <div className="space-y-1 w-2/3">
+                  <div className="h-2 w-full bg-blue-500/80 rounded-full" />
+                  <div className="h-1.5 w-3/4 bg-gray-200 dark:bg-gray-700 rounded-full" />
+                </div>
+                <Bookmark className="h-4 w-4 text-blue-500 fill-blue-500 shrink-0" />
+              </div>
+              <div className="h-8 w-full bg-gray-50 dark:bg-gray-900 rounded-lg flex items-center justify-center border border-gray-100/50 dark:border-gray-800">
+                <Star className="h-3.5 w-3.5 text-amber-400 fill-amber-400 animate-pulse" />
+              </div>
+            </div>
+
+            {/* Floating Accents */}
+            <div className="absolute top-2 right-2 text-indigo-400/80 animate-bounce" style={{ animationDelay: '0.5s' }}>
+              <Star className="h-3.5 w-3.5 fill-current" />
+            </div>
+            <div className="absolute bottom-2 left-2 text-emerald-400/80 animate-bounce" style={{ animationDelay: '1.2s' }}>
+              <Sparkles className="h-4 w-4" />
+            </div>
+          </div>
+
+          <h3 className="text-base font-bold text-gray-950 dark:text-white">Your library is waiting</h3>
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 max-w-sm mx-auto leading-relaxed">
             Click the save bookmark button under any post in the Home feed to save them to your private folder!
           </p>
           <button
             onClick={() => setActiveTab('feed')}
-            className="mt-4 rounded-xl bg-blue-600 px-4 py-2 text-xs font-bold text-white hover:bg-blue-700 transition"
+            className="mt-5 inline-flex items-center space-x-1.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-2.5 text-xs font-bold text-white hover:from-blue-700 hover:to-indigo-700 shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer"
           >
-            Explore Feed
+            <Sparkles className="h-3.5 w-3.5" />
+            <span>Discover Inspiring Content</span>
           </button>
         </div>
       ) : (
