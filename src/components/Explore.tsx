@@ -18,7 +18,9 @@ import {
   Flame, 
   Grid, 
   Image as ImageIcon,
-  Tv
+  Tv,
+  Hash,
+  FileText
 } from 'lucide-react';
 
 interface ExploreProps {
@@ -51,6 +53,24 @@ export default function Explore({
   // Explore states
   const [activeCategory, setActiveCategory] = useState<CategoryType>('trending');
   const [localSearch, setLocalSearch] = useState('');
+  const [searchTab, setSearchTab] = useState<'posts' | 'people' | 'hashtags'>('posts');
+  const [allUsers, setAllUsers] = useState<User[]>([]);
+
+  // Fetch all users on mount for real-time people search
+  useEffect(() => {
+    const fetchAllUsers = async () => {
+      try {
+        const res = await fetch('/api/users');
+        if (res.ok) {
+          const data = await res.json();
+          setAllUsers(data);
+        }
+      } catch (err) {
+        console.error('Error fetching all users for explore search:', err);
+      }
+    };
+    fetchAllUsers();
+  }, []);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [commentInput, setCommentInput] = useState('');
   const [commentLoading, setCommentLoading] = useState(false);
@@ -267,6 +287,50 @@ export default function Explore({
     return list;
   }, [posts, activeCategory, localSearch, currentUser.id, currentUser.following]);
 
+  // Dynamically extract and tally all hashtags from existing posts for real-time tag search
+  const allHashtags = useMemo(() => {
+    const counts: { [key: string]: number } = {};
+    posts.forEach(p => {
+      if (p.hashtags) {
+        p.hashtags.forEach(h => {
+          const formatted = h.startsWith('#') ? h : `#${h}`;
+          counts[formatted] = (counts[formatted] || 0) + 1;
+        });
+      }
+    });
+    return Object.entries(counts).map(([hashtag, count]) => ({ hashtag, count }));
+  }, [posts]);
+
+  // Real-time matched posts
+  const filteredSearchPosts = useMemo(() => {
+    if (!localSearch.trim()) return [];
+    const query = localSearch.toLowerCase();
+    return posts.filter(p => 
+      p.content.toLowerCase().includes(query) ||
+      p.username.toLowerCase().includes(query) ||
+      p.hashtags.some(h => h.toLowerCase().includes(query))
+    );
+  }, [posts, localSearch]);
+
+  // Real-time matched users
+  const filteredSearchPeople = useMemo(() => {
+    if (!localSearch.trim()) return [];
+    const query = localSearch.toLowerCase();
+    return allUsers.filter(u => 
+      u.username.toLowerCase().includes(query) ||
+      (u.bio || '').toLowerCase().includes(query)
+    );
+  }, [allUsers, localSearch]);
+
+  // Real-time matched hashtags
+  const filteredSearchHashtags = useMemo(() => {
+    if (!localSearch.trim()) return [];
+    const query = localSearch.toLowerCase().replace('#', '');
+    return allHashtags.filter(h => 
+      h.hashtag.toLowerCase().includes(query)
+    );
+  }, [allHashtags, localSearch]);
+
   // Aesthetic backgrounds for text-only posts in the Explore grid
   const textGradients = [
     'from-indigo-500 via-purple-500 to-pink-500',
@@ -312,137 +376,360 @@ export default function Explore({
         </div>
       </div>
 
-      {/* Category Selection Carousel (Connectify pills) */}
-      <div className="flex items-center space-x-2 overflow-x-auto pb-2 scrollbar-none -mx-2 px-2">
-        {[
-          { id: 'trending', label: 'Trending', icon: Flame, color: 'text-amber-500 bg-amber-500/10' },
-          { id: 'for-you', label: 'For You', icon: Sparkles, color: 'text-indigo-500 bg-indigo-500/10' },
-          { id: 'photography', label: 'Photography', icon: ImageIcon, color: 'text-emerald-500 bg-emerald-500/10' },
-          { id: 'travel', label: 'Travel', icon: Compass, color: 'text-sky-500 bg-sky-500/10' },
-          { id: 'tech', label: 'Coding & Tech', icon: Tv, color: 'text-blue-500 bg-blue-500/10' },
-          { id: 'art', label: 'Art & Design', icon: Grid, color: 'text-rose-500 bg-rose-500/10' },
-          { id: 'ai', label: 'Gemini AI', icon: Sparkles, color: 'text-fuchsia-500 bg-fuchsia-500/10' },
-        ].map((cat) => {
-          const isActive = activeCategory === cat.id;
-          const Icon = cat.icon;
-          return (
-            <button
-              key={cat.id}
-              onClick={() => setActiveCategory(cat.id as CategoryType)}
-              className={`flex items-center space-x-1.5 shrink-0 rounded-full px-4 py-2 text-xs font-semibold tracking-wide transition duration-150 border cursor-pointer ${
-                isActive
-                  ? 'bg-zinc-900 text-white border-zinc-900 dark:bg-white dark:text-zinc-950 dark:border-white shadow'
-                  : 'bg-white dark:bg-zinc-900 text-gray-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800/80 hover:bg-zinc-50 dark:hover:bg-zinc-800/50'
-              }`}
-            >
-              <Icon className={`h-3.5 w-3.5 ${isActive ? 'text-current' : cat.color.split(' ')[0]}`} />
-              <span>{cat.label}</span>
-            </button>
-          );
-        })}
-      </div>
+      {/* Category Selection Carousel or Search Tabs */}
+      {localSearch.trim() ? (
+        <div className="flex border-b border-zinc-150 dark:border-zinc-800 pb-1.5 space-x-1 sm:space-x-2">
+          {[
+            { id: 'posts', label: 'Posts', icon: FileText, count: filteredSearchPosts.length },
+            { id: 'people', label: 'People', icon: UserCheck, count: filteredSearchPeople.length },
+            { id: 'hashtags', label: 'Hashtags', icon: Hash, count: filteredSearchHashtags.length }
+          ].map((tab) => {
+            const isActive = searchTab === tab.id;
+            const Icon = tab.icon;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setSearchTab(tab.id as 'posts' | 'people' | 'hashtags')}
+                className={`flex-1 flex items-center justify-center space-x-1.5 pb-3 text-center text-xs font-bold border-b-2 transition-all duration-150 cursor-pointer ${
+                  isActive
+                    ? 'border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-zinc-400'
+                }`}
+              >
+                <Icon className="h-3.5 w-3.5 shrink-0" />
+                <span>{tab.label}</span>
+                <span className="px-1.5 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-[10px] text-gray-500 dark:text-zinc-400 font-mono">
+                  {tab.count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      ) : (
+        /* Category Selection Carousel (Connectify pills) */
+        <div className="flex items-center space-x-2 overflow-x-auto pb-2 scrollbar-none -mx-2 px-2">
+          {[
+            { id: 'trending', label: 'Trending', icon: Flame, color: 'text-amber-500 bg-amber-500/10' },
+            { id: 'for-you', label: 'For You', icon: Sparkles, color: 'text-indigo-500 bg-indigo-500/10' },
+            { id: 'photography', label: 'Photography', icon: ImageIcon, color: 'text-emerald-500 bg-emerald-500/10' },
+            { id: 'travel', label: 'Travel', icon: Compass, color: 'text-sky-500 bg-sky-500/10' },
+            { id: 'tech', label: 'Coding & Tech', icon: Tv, color: 'text-blue-500 bg-blue-500/10' },
+            { id: 'art', label: 'Art & Design', icon: Grid, color: 'text-rose-500 bg-rose-500/10' },
+            { id: 'ai', label: 'Gemini AI', icon: Sparkles, color: 'text-fuchsia-500 bg-fuchsia-500/10' },
+          ].map((cat) => {
+            const isActive = activeCategory === cat.id;
+            const Icon = cat.icon;
+            return (
+              <button
+                key={cat.id}
+                onClick={() => setActiveCategory(cat.id as CategoryType)}
+                className={`flex items-center space-x-1.5 shrink-0 rounded-full px-4 py-2 text-xs font-semibold tracking-wide transition duration-150 border cursor-pointer ${
+                  isActive
+                    ? 'bg-zinc-900 text-white border-zinc-900 dark:bg-white dark:text-zinc-950 dark:border-white shadow'
+                    : 'bg-white dark:bg-zinc-900 text-gray-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800/80 hover:bg-zinc-50 dark:hover:bg-zinc-800/50'
+                }`}
+              >
+                <Icon className={`h-3.5 w-3.5 ${isActive ? 'text-current' : cat.color.split(' ')[0]}`} />
+                <span>{cat.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {/* Main Discover Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        {/* Left Columns - Connectify Asymmetric Media Grid */}
+        {/* Left Columns - Connectify Asymmetric Media Grid or Search Results */}
         <div className="lg:col-span-2 space-y-4">
-          {filteredExplorePosts.length === 0 ? (
-            <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 p-12 text-center shadow-sm">
-              <Compass className="mx-auto h-12 w-12 text-zinc-400 dark:text-zinc-600 mb-3 animate-pulse" />
-              <h4 className="text-sm font-bold text-gray-800 dark:text-zinc-200">No content matches this category</h4>
-              <p className="text-xs text-gray-400 dark:text-zinc-500 mt-1 max-w-sm mx-auto">
-                Be the first to create posts with tags or descriptions related to {activeCategory.replace('-', ' ')}!
-              </p>
-              <button
-                onClick={() => { setActiveCategory('trending'); setLocalSearch(''); }}
-                className="mt-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-4 py-2 shadow transition"
-              >
-                Reset Filter
-              </button>
+          {localSearch.trim() ? (
+            <div className="space-y-4">
+              {searchTab === 'posts' && (
+                filteredSearchPosts.length === 0 ? (
+                  <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 p-12 text-center shadow-sm">
+                    <Compass className="mx-auto h-12 w-12 text-zinc-400 dark:text-zinc-600 mb-3 animate-pulse" />
+                    <h4 className="text-sm font-bold text-gray-800 dark:text-zinc-200">No matching posts found</h4>
+                    <p className="text-xs text-gray-400 dark:text-zinc-500 mt-1 max-w-sm mx-auto">
+                      Try searching for other words, tags, or topics.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3.5 md:gap-4 auto-rows-[190px]">
+                    {filteredSearchPosts.map((post, index) => {
+                      const isSpotlight = index % 9 === 1 || index === 0;
+                      const hasMedia = post.image || post.video;
+                      const gradientIdx = index % textGradients.length;
+                      
+                      return (
+                        <div
+                          key={post.id}
+                          onClick={() => setSelectedPost(post)}
+                          className={`group relative rounded-2xl overflow-hidden cursor-pointer shadow-sm border border-zinc-200/50 dark:border-zinc-800/50 transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 ${
+                            isSpotlight 
+                              ? 'col-span-2 row-span-2 h-full' 
+                              : 'col-span-1 h-full'
+                          }`}
+                        >
+                          {/* Media File or Gradient Placeholder */}
+                          {post.image ? (
+                            <img
+                              src={post.image}
+                              alt={post.username}
+                              className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                              referrerPolicy="no-referrer"
+                            />
+                          ) : post.video ? (
+                            <div className="relative h-full w-full bg-zinc-950">
+                              <video
+                                src={post.video}
+                                className="h-full w-full object-cover"
+                                muted
+                                loop
+                                playsInline
+                              />
+                              <div className="absolute top-2.5 right-2.5 bg-black/60 backdrop-blur-md p-1.5 rounded-full text-white">
+                                <Play className="h-3 w-3 fill-white" />
+                              </div>
+                            </div>
+                          ) : (
+                            // Text-only Aesthetic Gradient Card
+                            <div className={`h-full w-full bg-gradient-to-br ${textGradients[gradientIdx]} p-4 flex flex-col justify-between text-white transition duration-500 group-hover:brightness-95`}>
+                              <div className="flex items-center space-x-1.5 opacity-90">
+                                <img
+                                  src={post.userAvatar}
+                                  alt={post.username}
+                                  className="h-5 w-5 rounded-full object-cover border border-white/20"
+                                />
+                                <span className="text-[10px] font-bold truncate">@{post.username}</span>
+                              </div>
+                              <p className={`line-clamp-4 font-display font-semibold leading-relaxed tracking-wide text-left ${
+                                isSpotlight ? 'text-sm' : 'text-[10px]'
+                              }`}>
+                                {post.content}
+                              </p>
+                              <div className="text-[9px] opacity-75 font-mono">
+                                {post.hashtags.length > 0 ? `#${post.hashtags[0]}` : '#Connectify'}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Quick Media Indicators */}
+                          {hasMedia && (
+                            <div className="absolute top-2.5 right-2.5 bg-black/50 backdrop-blur-md p-1.5 rounded-full text-white transition opacity-100 group-hover:opacity-0">
+                              {post.video ? <Play className="h-3.5 w-3.5 fill-white" /> : <ImageIcon className="h-3.5 w-3.5" />}
+                            </div>
+                          )}
+
+                          {/* Connectify Glassmorphic Hover Overlay */}
+                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center space-x-6 text-white backdrop-blur-xs">
+                            <div className="flex items-center space-x-1.5">
+                              <Heart className="h-5 w-5 fill-white text-white scale-90 group-hover:scale-100 transition duration-300" />
+                              <span className="text-xs font-bold">{post.likes.length}</span>
+                            </div>
+                            <div className="flex items-center space-x-1.5">
+                              <MessageCircle className="h-5 w-5 fill-white text-white scale-90 group-hover:scale-100 transition duration-300" />
+                              <span className="text-xs font-bold">{post.comments.length}</span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )
+              )}
+
+              {searchTab === 'people' && (
+                <div className="space-y-3.5">
+                  {filteredSearchPeople.length === 0 ? (
+                    <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 p-12 text-center shadow-sm">
+                      <Compass className="mx-auto h-12 w-12 text-zinc-400 dark:text-zinc-600 mb-3 animate-pulse" />
+                      <h4 className="text-sm font-bold text-gray-800 dark:text-zinc-200">No matching profiles found</h4>
+                      <p className="text-xs text-gray-400 dark:text-zinc-500 mt-1 max-w-sm mx-auto">
+                        We couldn't find any users matching your query.
+                      </p>
+                    </div>
+                  ) : (
+                    filteredSearchPeople.map((u) => {
+                      const isFollowing = currentUser.following.includes(u.id);
+                      const isMe = u.id === currentUser.id;
+                      return (
+                        <div key={u.id} className="flex items-center justify-between p-4.5 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-150 dark:border-zinc-800 shadow-xs animate-fade-in hover:border-zinc-250 dark:hover:border-zinc-700 transition">
+                          <div className="flex items-center space-x-3.5 overflow-hidden">
+                            <img src={u.avatar} alt={u.username} className="h-11 w-11 rounded-full object-cover shrink-0 border border-zinc-100 dark:border-zinc-800 shadow-xs" />
+                            <div className="overflow-hidden">
+                              <div className="flex items-center space-x-1.5">
+                                <span className="text-xs font-bold text-gray-950 dark:text-white truncate">@{u.username}</span>
+                                {u.verified && <span className="flex h-3.5 w-3.5 items-center justify-center rounded-full bg-blue-500 text-[8px] font-bold text-white shrink-0">✓</span>}
+                              </div>
+                              {u.bio && <p className="text-[10px] text-gray-500 dark:text-zinc-400 truncate max-w-xs sm:max-w-md mt-0.5">{u.bio}</p>}
+                            </div>
+                          </div>
+                          {!isMe && (
+                            <button
+                              disabled={followLoading === u.id}
+                              onClick={() => handleFollowUser(u.id)}
+                              className={`rounded-full px-4.5 py-2 text-xs font-bold transition flex items-center space-x-1 shrink-0 cursor-pointer ${
+                                isFollowing
+                                  ? 'bg-zinc-100 text-gray-700 hover:bg-zinc-200 dark:bg-zinc-800/80 dark:text-zinc-300 dark:hover:bg-zinc-800'
+                                  : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-xs'
+                              }`}
+                            >
+                              {isFollowing ? (
+                                <>
+                                  <UserCheck className="h-3 w-3" />
+                                  <span>Following</span>
+                                </>
+                              ) : (
+                                <>
+                                  <UserPlus className="h-3 w-3" />
+                                  <span>Follow</span>
+                                </>
+                              )}
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              )}
+
+              {searchTab === 'hashtags' && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                  {filteredSearchHashtags.length === 0 ? (
+                    <div className="col-span-full rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 p-12 text-center shadow-sm">
+                      <Compass className="mx-auto h-12 w-12 text-zinc-400 dark:text-zinc-600 mb-3 animate-pulse" />
+                      <h4 className="text-sm font-bold text-gray-800 dark:text-zinc-200">No matching hashtags found</h4>
+                      <p className="text-xs text-gray-400 dark:text-zinc-500 mt-1 max-w-sm mx-auto">
+                        No active hashtags match your search query.
+                      </p>
+                    </div>
+                  ) : (
+                    filteredSearchHashtags.map((h) => (
+                      <button
+                        key={h.hashtag}
+                        onClick={() => {
+                          setLocalSearch(h.hashtag);
+                          setSearchTab('posts');
+                        }}
+                        className="flex items-center justify-between p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-150 dark:border-zinc-800 shadow-xs hover:border-pink-300 dark:hover:border-pink-900 transition text-left cursor-pointer animate-fade-in"
+                      >
+                        <div className="flex items-center space-x-2.5">
+                          <div className="p-2.5 rounded-xl bg-pink-50 dark:bg-pink-950/30 text-pink-500">
+                            <span className="text-sm font-bold">#</span>
+                          </div>
+                          <div>
+                            <span className="text-xs font-bold text-gray-900 dark:text-white">{h.hashtag}</span>
+                            <p className="text-[10px] text-gray-400 dark:text-zinc-500">Popular discover topic</p>
+                          </div>
+                        </div>
+                        <span className="text-xs font-bold bg-pink-100/50 text-pink-600 dark:bg-pink-950/50 dark:text-pink-400 px-2.5 py-1 rounded-full font-mono">
+                          {h.count} {h.count === 1 ? 'post' : 'posts'}
+                        </span>
+                      </button>
+                    ))
+                  )}
+                </div>
+              )}
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3.5 md:gap-4 auto-rows-[190px]">
-              {filteredExplorePosts.map((post, index) => {
-                const isSpotlight = index % 9 === 1 || index === 0;
-                const hasMedia = post.image || post.video;
-                const gradientIdx = index % textGradients.length;
-                
-                return (
-                  <div
-                    key={post.id}
-                    onClick={() => setSelectedPost(post)}
-                    className={`group relative rounded-2xl overflow-hidden cursor-pointer shadow-sm border border-zinc-200/50 dark:border-zinc-800/50 transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 ${
-                      isSpotlight 
-                        ? 'col-span-2 row-span-2 h-full' 
-                        : 'col-span-1 h-full'
-                    }`}
-                  >
-                    {/* Media File or Gradient Placeholder */}
-                    {post.image ? (
-                      <img
-                        src={post.image}
-                        alt={post.username}
-                        className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                        referrerPolicy="no-referrer"
-                      />
-                    ) : post.video ? (
-                      <div className="relative h-full w-full bg-zinc-950">
-                        <video
-                          src={post.video}
-                          className="h-full w-full object-cover"
-                          muted
-                          loop
-                          playsInline
+            filteredExplorePosts.length === 0 ? (
+              <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 p-12 text-center shadow-sm">
+                <Compass className="mx-auto h-12 w-12 text-zinc-400 dark:text-zinc-600 mb-3 animate-pulse" />
+                <h4 className="text-sm font-bold text-gray-800 dark:text-zinc-200">No content matches this category</h4>
+                <p className="text-xs text-gray-400 dark:text-zinc-500 mt-1 max-w-sm mx-auto">
+                  Be the first to create posts with tags or descriptions related to {activeCategory.replace('-', ' ')}!
+                </p>
+                <button
+                  onClick={() => { setActiveCategory('trending'); setLocalSearch(''); }}
+                  className="mt-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-4 py-2 shadow transition"
+                >
+                  Reset Filter
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3.5 md:gap-4 auto-rows-[190px]">
+                {filteredExplorePosts.map((post, index) => {
+                  const isSpotlight = index % 9 === 1 || index === 0;
+                  const hasMedia = post.image || post.video;
+                  const gradientIdx = index % textGradients.length;
+                  
+                  return (
+                    <div
+                      key={post.id}
+                      onClick={() => setSelectedPost(post)}
+                      className={`group relative rounded-2xl overflow-hidden cursor-pointer shadow-sm border border-zinc-200/50 dark:border-zinc-800/50 transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 ${
+                        isSpotlight 
+                          ? 'col-span-2 row-span-2 h-full' 
+                          : 'col-span-1 h-full'
+                      }`}
+                    >
+                      {/* Media File or Gradient Placeholder */}
+                      {post.image ? (
+                        <img
+                          src={post.image}
+                          alt={post.username}
+                          className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                          referrerPolicy="no-referrer"
                         />
-                        <div className="absolute top-2.5 right-2.5 bg-black/60 backdrop-blur-md p-1.5 rounded-full text-white">
-                          <Play className="h-3 w-3 fill-white" />
-                        </div>
-                      </div>
-                    ) : (
-                      // Text-only Aesthetic Gradient Card
-                      <div className={`h-full w-full bg-gradient-to-br ${textGradients[gradientIdx]} p-4 flex flex-col justify-between text-white transition duration-500 group-hover:brightness-95`}>
-                        <div className="flex items-center space-x-1.5 opacity-90">
-                          <img
-                            src={post.userAvatar}
-                            alt={post.username}
-                            className="h-5 w-5 rounded-full object-cover border border-white/20"
+                      ) : post.video ? (
+                        <div className="relative h-full w-full bg-zinc-950">
+                          <video
+                            src={post.video}
+                            className="h-full w-full object-cover"
+                            muted
+                            loop
+                            playsInline
                           />
-                          <span className="text-[10px] font-bold truncate">@{post.username}</span>
+                          <div className="absolute top-2.5 right-2.5 bg-black/60 backdrop-blur-md p-1.5 rounded-full text-white">
+                            <Play className="h-3 w-3 fill-white" />
+                          </div>
                         </div>
-                        <p className={`line-clamp-4 font-display font-semibold leading-relaxed tracking-wide text-left ${
-                          isSpotlight ? 'text-sm' : 'text-[10px]'
-                        }`}>
-                          {post.content}
-                        </p>
-                        <div className="text-[9px] opacity-75 font-mono">
-                          {post.hashtags.length > 0 ? `#${post.hashtags[0]}` : '#Connectify'}
+                      ) : (
+                        // Text-only Aesthetic Gradient Card
+                        <div className={`h-full w-full bg-gradient-to-br ${textGradients[gradientIdx]} p-4 flex flex-col justify-between text-white transition duration-500 group-hover:brightness-95`}>
+                          <div className="flex items-center space-x-1.5 opacity-90">
+                            <img
+                              src={post.userAvatar}
+                              alt={post.username}
+                              className="h-5 w-5 rounded-full object-cover border border-white/20"
+                            />
+                            <span className="text-[10px] font-bold truncate">@{post.username}</span>
+                          </div>
+                          <p className={`line-clamp-4 font-display font-semibold leading-relaxed tracking-wide text-left ${
+                            isSpotlight ? 'text-sm' : 'text-[10px]'
+                          }`}>
+                            {post.content}
+                          </p>
+                          <div className="text-[9px] opacity-75 font-mono">
+                            {post.hashtags.length > 0 ? `#${post.hashtags[0]}` : '#Connectify'}
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
 
-                    {/* Quick Media Indicators */}
-                    {hasMedia && (
-                      <div className="absolute top-2.5 right-2.5 bg-black/50 backdrop-blur-md p-1.5 rounded-full text-white transition opacity-100 group-hover:opacity-0">
-                        {post.video ? <Play className="h-3.5 w-3.5 fill-white" /> : <ImageIcon className="h-3.5 w-3.5" />}
-                      </div>
-                    )}
+                      {/* Quick Media Indicators */}
+                      {hasMedia && (
+                        <div className="absolute top-2.5 right-2.5 bg-black/50 backdrop-blur-md p-1.5 rounded-full text-white transition opacity-100 group-hover:opacity-0">
+                          {post.video ? <Play className="h-3.5 w-3.5 fill-white" /> : <ImageIcon className="h-3.5 w-3.5" />}
+                        </div>
+                      )}
 
-                    {/* Connectify Glassmorphic Hover Overlay */}
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center space-x-6 text-white backdrop-blur-xs">
-                      <div className="flex items-center space-x-1.5">
-                        <Heart className="h-5 w-5 fill-white text-white scale-90 group-hover:scale-100 transition duration-300" />
-                        <span className="text-xs font-bold">{post.likes.length}</span>
-                      </div>
-                      <div className="flex items-center space-x-1.5">
-                        <MessageCircle className="h-5 w-5 fill-white text-white scale-90 group-hover:scale-100 transition duration-300" />
-                        <span className="text-xs font-bold">{post.comments.length}</span>
+                      {/* Connectify Glassmorphic Hover Overlay */}
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center space-x-6 text-white backdrop-blur-xs">
+                        <div className="flex items-center space-x-1.5">
+                          <Heart className="h-5 w-5 fill-white text-white scale-90 group-hover:scale-100 transition duration-300" />
+                          <span className="text-xs font-bold">{post.likes.length}</span>
+                        </div>
+                        <div className="flex items-center space-x-1.5">
+                          <MessageCircle className="h-5 w-5 fill-white text-white scale-90 group-hover:scale-100 transition duration-300" />
+                          <span className="text-xs font-bold">{post.comments.length}</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
+                  );
+                })}
+              </div>
+            )
           )}
         </div>
 

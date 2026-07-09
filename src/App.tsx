@@ -12,6 +12,8 @@ import Settings from './components/Settings';
 import Profile from './components/Profile';
 import AuthModal from './components/AuthModal';
 import StoriesModal from './components/StoriesModal';
+import TrendingHashtags from './components/TrendingHashtags';
+import { motion, AnimatePresence } from 'motion/react';
 import { 
   Sparkles, 
   Compass, 
@@ -197,8 +199,8 @@ export default function App() {
           const botRes = await fetch('/api/users/gemini-bot');
           const botUser = botRes.ok && botRes.headers.get("content-type")?.includes("application/json") ? await botRes.json() : {
             id: 'gemini-bot',
-            email: 'bot@gemini.ai',
-            username: 'GeminiBot',
+            email: 'bot@openrouter.ai',
+            username: 'OpenRouterBot',
             bio: 'Official AI Assistant',
             avatar: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=150&auto=format&fit=crop&q=80',
             cover: '',
@@ -342,11 +344,29 @@ export default function App() {
 
           {/* 2. Central Active View Pane */}
           <div className="lg:col-span-2 space-y-6">
-            {renderTabContent()}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeTab}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.22, ease: 'easeInOut' }}
+              >
+                {renderTabContent()}
+              </motion.div>
+            </AnimatePresence>
           </div>
 
           {/* 3. Right Sidebar Widgets Panel (desktop only) */}
           <div className="hidden lg:block space-y-6 h-[fit-content] sticky top-22">
+            <TrendingHashtags
+              onHashtagClick={(tag) => {
+                setSearchQuery('#' + tag);
+                setActiveTab('feed');
+              }}
+              refreshTrigger={posts.length}
+            />
+
             {/* Quick Suggestions widget */}
             {rightRecommendations.length > 0 && (
               <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900">

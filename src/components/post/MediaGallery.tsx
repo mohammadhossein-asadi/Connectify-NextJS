@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { ChevronLeft, ChevronRight, X, GripVertical, Image as ImageIcon, Film } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X, GripVertical, Image as ImageIcon, Film, Sparkles } from 'lucide-react';
+import ImageEditorModal from '../ImageEditorModal';
 
 export interface MediaItem {
   id: string;
@@ -22,6 +23,7 @@ export default function MediaGallery({
 }: MediaGalleryProps) {
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  const [showEditor, setShowEditor] = useState(false);
 
   if (items.length === 0) return null;
 
@@ -206,6 +208,21 @@ export default function MediaGallery({
 
           {items.length > 1 && <div className="h-4 w-[1px] bg-white/20 mx-1" />}
 
+          {/* Edit current image */}
+          {currentItem && currentItem.type === 'image' && (
+            <>
+              <button
+                type="button"
+                onClick={() => setShowEditor(true)}
+                className="rounded-md p-1 text-indigo-300 hover:text-white hover:bg-indigo-500/20 transition cursor-pointer"
+                title="Edit image effects & typography"
+              >
+                <Sparkles className="h-4 w-4" />
+              </button>
+              <div className="h-4 w-[1px] bg-white/20 mx-1" />
+            </>
+          )}
+
           {/* Remove current item */}
           <button
             type="button"
@@ -285,6 +302,21 @@ export default function MediaGallery({
             })}
           </div>
         </div>
+      )}
+      {showEditor && currentItem && currentItem.type === 'image' && (
+        <ImageEditorModal
+          imageSrc={currentItem.data}
+          onSave={(editedDataUrl) => {
+            setItems((prev) =>
+              prev.map((item, idx) =>
+                idx === activeIndex ? { ...item, data: editedDataUrl } : item
+              )
+            );
+            setShowEditor(false);
+          }}
+          onClose={() => setShowEditor(false)}
+          title="Edit Post Photo"
+        />
       )}
     </div>
   );

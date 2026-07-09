@@ -51,8 +51,8 @@ export default function Messages({
             // Fallback bot object
             botUser = {
               id: 'gemini-bot',
-              email: 'bot@gemini.ai',
-              username: 'GeminiBot',
+              email: 'bot@openrouter.ai',
+              username: 'OpenRouterBot',
               bio: 'Official AI Assistant',
               avatar: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=150&auto=format&fit=crop&q=80',
               cover: '',
@@ -338,7 +338,13 @@ export default function Messages({
                         </div>
                         <span className="text-[8px] text-gray-400 mt-1 flex items-center space-x-1">
                           <span>{messageTime}</span>
-                          {isMe && <CheckCheck className="h-3 w-3 text-blue-500" />}
+                          {isMe && (
+                            m.read ? (
+                              <CheckCheck className="h-3 w-3 text-emerald-500 dark:text-emerald-400" title="Read" />
+                            ) : (
+                              <Check className="h-3 w-3 text-gray-400" title="Sent" />
+                            )
+                          )}
                         </span>
                       </div>
                     </div>
@@ -352,7 +358,7 @@ export default function Messages({
                   <div className="flex flex-col items-start">
                     <div className="rounded-2xl px-3.5 py-2.5 bg-indigo-50/60 text-indigo-900 dark:bg-indigo-950/20 dark:text-indigo-300 text-xs rounded-bl-none flex items-center space-x-1">
                       <Sparkles className="h-3.5 w-3.5 animate-spin mr-1 text-indigo-500" />
-                      <span className="font-mono text-[10px]">GeminiBot is writing response...</span>
+                      <span className="font-mono text-[10px]">OpenRouterBot is writing response...</span>
                     </div>
                   </div>
                 </div>
@@ -365,7 +371,7 @@ export default function Messages({
             <form onSubmit={handleSendMessage} className="p-3 border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 flex items-center space-x-2">
               <input
                 type="text"
-                placeholder={selectedUser.id === 'gemini-bot' ? "Ask Gemini anything, ask for content tips..." : "Write your private message..."}
+                placeholder={selectedUser.id === 'gemini-bot' ? "Ask AI Assistant anything, ask for content tips..." : "Write your private message..."}
                 value={typedMessage}
                 onChange={(e) => setTypedMessage(e.target.value)}
                 className="flex-1 rounded-xl border border-gray-200 bg-gray-50 py-2.5 px-4 text-xs text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:bg-white focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-500 dark:focus:border-blue-500"
