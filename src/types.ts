@@ -2,6 +2,7 @@ export interface User {
   id: string;
   email: string;
   username: string;
+  password?: string; // hashed password, never sent to client
   bio: string;
   avatar: string;
   cover: string;

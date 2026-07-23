@@ -214,7 +214,7 @@ export default function StoriesList({
           className="relative flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 transition border border-gray-200 dark:border-gray-700 group cursor-pointer"
         >
           <img
-            src={currentUser.avatar}
+            loading="lazy" src={currentUser.avatar}
             alt="My Avatar"
             className="h-14 w-14 rounded-full object-cover group-hover:opacity-75 transition"
           />
@@ -244,7 +244,7 @@ export default function StoriesList({
             <div className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-transparent bg-gradient-to-tr from-amber-500 via-pink-600 to-indigo-600 p-[2px] transition-all group-hover:scale-105 active:scale-95">
               <div className="h-full w-full rounded-full border-2 border-white bg-white p-[1px] dark:border-gray-950 dark:bg-gray-950">
                 <img
-                  src={story.userAvatar}
+                  loading="lazy" src={story.userAvatar}
                   alt={story.username}
                   className="h-full w-full rounded-full object-cover"
                 />
@@ -328,7 +328,7 @@ export default function StoriesList({
                 {/* Header preview */}
                 <div className="flex items-center space-x-2">
                   <img
-                    src={currentUser.avatar}
+                    loading="lazy" src={currentUser.avatar}
                     alt={currentUser.username}
                     className="h-7 w-7 rounded-full object-cover border border-white/20"
                   />
@@ -482,7 +482,7 @@ export default function StoriesList({
             {/* Content Preview */}
             <div className="relative aspect-[9/16] bg-gray-950 group">
               <img
-                src={previewStory}
+                loading="lazy" src={previewStory}
                 alt="Story draft preview"
                 className="h-full w-full object-contain"
               />

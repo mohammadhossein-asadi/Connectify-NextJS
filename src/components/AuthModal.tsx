@@ -68,7 +68,7 @@ export default function AuthModal({ onLoginSuccess }: AuthModalProps) {
   };
 
   return (
-    <div id="auth-modal-overlay" className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/45 dark:bg-[#09090b]/90 backdrop-blur-md p-4">
+    <div role="dialog" aria-modal="true" aria-label="Authentication" className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/45 dark:bg-[#09090b]/90 backdrop-blur-md p-4">
       <div 
         id="auth-modal-card" 
         className="w-full max-w-md overflow-hidden rounded-3xl bg-white dark:bg-[#121214] border border-zinc-200 dark:border-zinc-800/80 shadow-2xl transition-all duration-300"
@@ -139,7 +139,7 @@ export default function AuthModal({ onLoginSuccess }: AuthModalProps) {
                 <input
                   type="password"
                   required
-                  placeholder="••••••••"
+                  placeholder="Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full rounded-lg border border-gray-200 py-2.5 pl-10 pr-4 text-sm text-gray-900 bg-gray-50 focus:border-blue-500 focus:bg-white focus:outline-none dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:focus:border-blue-500"

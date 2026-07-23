@@ -201,9 +201,9 @@ export default function Messages({
   );
 
   return (
-    <div className="flex h-[75vh] overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
+    <div className="flex flex-col md:flex-row h-[85vh] md:h-[75vh] overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
       {/* 1. Left Conversation list Panel */}
-      <div className="w-1/3 border-r border-gray-100 dark:border-gray-800 flex flex-col h-full bg-gray-50/50 dark:bg-gray-950/20">
+      <div className="w-full md:w-1/3 border-r border-gray-100 dark:border-gray-800 flex flex-col h-full bg-gray-50/50 dark:bg-gray-950/20 max-h-[30vh] md:max-h-full">
         <div className="p-4 border-b border-gray-100 dark:border-gray-800">
           <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-3">Chats</h3>
           <div className="relative">
@@ -239,7 +239,7 @@ export default function Messages({
               >
                 <div className="relative">
                   <img
-                    src={user.avatar}
+                    loading="lazy" src={user.avatar}
                     alt={user.username}
                     className="h-10 w-10 rounded-full object-cover border border-gray-100 dark:border-gray-800"
                   />
@@ -259,7 +259,7 @@ export default function Messages({
                     </span>
                     {user.verified && (
                       <span className="text-[10px] ml-1 bg-blue-500 text-white rounded-full h-3 w-3 flex items-center justify-center font-bold">
-                        ✓
+                        ÃƒÂ¢Ã…â€œÃ¢â‚¬Å“
                       </span>
                     )}
                   </div>
@@ -281,7 +281,7 @@ export default function Messages({
             <div className="p-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 <img
-                  src={selectedUser.avatar}
+                  loading="lazy" src={selectedUser.avatar}
                   alt={selectedUser.username}
                   className="h-10 w-10 rounded-full object-cover border border-gray-100 dark:border-gray-800"
                 />
@@ -289,7 +289,7 @@ export default function Messages({
                   <div className="flex items-center space-x-1.5">
                     <h4 className="text-xs font-bold text-gray-900 dark:text-white">{selectedUser.username}</h4>
                     {selectedUser.verified && (
-                      <span className="bg-blue-500 text-white rounded-full h-3.5 w-3.5 flex items-center justify-center text-[8px] font-bold">✓</span>
+                      <span className="bg-blue-500 text-white rounded-full h-3.5 w-3.5 flex items-center justify-center text-[8px] font-bold">ÃƒÂ¢Ã…â€œÃ¢â‚¬Å“</span>
                     )}
                   </div>
                   <p className="text-[10px] text-gray-400 flex items-center">

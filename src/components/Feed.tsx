@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { formatRelativeTime } from '../lib/utils';
 import { User, Post, Story, Comment } from '../types';
 import StoriesList from './StoriesList';
 import PostCreate from './PostCreate';
+import { formatRelativeTime } from '../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
+import { formatRelativeTime } from '../lib/utils';
 import { 
   Heart, 
   MessageCircle, 
@@ -252,7 +255,7 @@ function PostMedia({ post }: PostMediaProps) {
           />
         ) : (
           <img
-            src={item.url}
+            loading="lazy" src={item.url}
             alt="Post content"
             className="max-h-96 w-full object-cover"
           />
@@ -275,7 +278,7 @@ function PostMedia({ post }: PostMediaProps) {
           />
         ) : (
           <img
-            src={activeItem.url}
+            loading="lazy" src={activeItem.url}
             alt={`Post media ${activeIndex + 1}`}
             className="h-full w-full object-contain"
           />
@@ -892,10 +895,10 @@ export default function Feed({
               (postReactions.laugh || []).length;
 
             const activeEmojis = [];
-            if ((postReactions.like || []).length > 0) activeEmojis.push("👍");
-            if ((postReactions.heart || []).length > 0) activeEmojis.push("❤️");
-            if ((postReactions.fire || []).length > 0) activeEmojis.push("🔥");
-            if ((postReactions.laugh || []).length > 0) activeEmojis.push("😂");
+            if ((postReactions.like || []).length > 0) activeEmojis.push("Ã°Å¸â€˜Â");
+            if ((postReactions.heart || []).length > 0) activeEmojis.push("Ã¢ÂÂ¤Ã¯Â¸Â");
+            if ((postReactions.fire || []).length > 0) activeEmojis.push("Ã°Å¸â€Â¥");
+            if ((postReactions.laugh || []).length > 0) activeEmojis.push("Ã°Å¸Ëœâ€š");
 
             const hasLiked = post.likes.includes(currentUser.id);
             const isBookmarked = currentUser.bookmarks.includes(post.id);
@@ -912,7 +915,7 @@ export default function Feed({
                 <div className="flex items-center justify-between p-4 pb-3">
                   <div className="flex items-center space-x-3">
                     <img
-                      src={post.userAvatar}
+                      loading="lazy" src={post.userAvatar}
                       alt={post.username}
                       className="h-10 w-10 rounded-full object-cover border border-gray-100 dark:border-gray-800"
                     />
@@ -926,7 +929,7 @@ export default function Feed({
                             className="flex h-4 w-4 items-center justify-center rounded-full bg-blue-500 text-[9px] font-bold text-white"
                             title="Verified Creator Badge"
                           >
-                            ✓
+                            Ã¢Å“â€œ
                           </span>
                         )}
                         {post.userId === 'gemini-bot' && (
@@ -937,8 +940,8 @@ export default function Feed({
                         )}
                       </div>
                       <div className="flex items-center space-x-1.5 text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">
-                        <span>{formatPostTime(post.createdAt)}</span>
-                        <span>•</span>
+                        <span>{formatRelativeTime(post.createdAt)}</span>
+                        <span>Ã¢â‚¬Â¢</span>
                         {(!post.visibility || post.visibility === 'public') && (
                           <span className="flex items-center space-x-0.5" title="Public: Anyone can view">
                             <Globe className="h-3 w-3 text-gray-400 dark:text-gray-500" />
@@ -1109,7 +1112,7 @@ export default function Feed({
                 <div className="flex items-center justify-between px-2 py-1.5 bg-gray-50/50 dark:bg-gray-900/40">
                   {/* Reactions Pill List */}
                   <div className="flex items-center space-x-1 sm:space-x-1.5">
-                    {/* Like 👍 */}
+                    {/* Like Ã°Å¸â€˜Â */}
                     <button
                       onClick={() => handleReactPost(post.id, 'like')}
                       className={`flex items-center space-x-1 rounded-xl px-2.5 py-1 text-xs font-semibold transition ${
@@ -1119,11 +1122,11 @@ export default function Feed({
                       }`}
                       title="Like"
                     >
-                      <span className="text-sm">👍</span>
+                      <span className="text-sm">Ã°Å¸â€˜Â</span>
                       <span className="text-[10px]">{(postReactions.like || []).length}</span>
                     </button>
 
-                    {/* Love ❤️ */}
+                    {/* Love Ã¢ÂÂ¤Ã¯Â¸Â */}
                     <button
                       onClick={() => handleReactPost(post.id, 'heart')}
                       className={`flex items-center space-x-1 rounded-xl px-2.5 py-1 text-xs font-semibold transition ${
@@ -1133,11 +1136,11 @@ export default function Feed({
                       }`}
                       title="Love"
                     >
-                      <span className="text-sm">❤️</span>
+                      <span className="text-sm">Ã¢ÂÂ¤Ã¯Â¸Â</span>
                       <span className="text-[10px]">{(postReactions.heart || []).length}</span>
                     </button>
 
-                    {/* Fire 🔥 */}
+                    {/* Fire Ã°Å¸â€Â¥ */}
                     <button
                       onClick={() => handleReactPost(post.id, 'fire')}
                       className={`flex items-center space-x-1 rounded-xl px-2.5 py-1 text-xs font-semibold transition ${
@@ -1147,11 +1150,11 @@ export default function Feed({
                       }`}
                       title="Fire"
                     >
-                      <span className="text-sm">🔥</span>
+                      <span className="text-sm">Ã°Å¸â€Â¥</span>
                       <span className="text-[10px]">{(postReactions.fire || []).length}</span>
                     </button>
 
-                    {/* Laugh 😂 */}
+                    {/* Laugh Ã°Å¸Ëœâ€š */}
                     <button
                       onClick={() => handleReactPost(post.id, 'laugh')}
                       className={`flex items-center space-x-1 rounded-xl px-2.5 py-1 text-xs font-semibold transition ${
@@ -1161,7 +1164,7 @@ export default function Feed({
                       }`}
                       title="Laugh"
                     >
-                      <span className="text-sm">😂</span>
+                      <span className="text-sm">Ã°Å¸Ëœâ€š</span>
                       <span className="text-[10px]">{(postReactions.laugh || []).length}</span>
                     </button>
                   </div>
@@ -1236,7 +1239,7 @@ export default function Feed({
                         {post.comments.map((comment) => (
                           <div key={comment.id} className="flex space-x-3 items-start">
                             <img
-                              src={comment.userAvatar}
+                              loading="lazy" src={comment.userAvatar}
                               alt={comment.username}
                               className="h-8 w-8 rounded-full object-cover mt-0.5 border border-gray-100 dark:border-gray-800"
                             />
@@ -1251,7 +1254,7 @@ export default function Feed({
                                     </span>
                                   )}
                                 </div>
-                                <span className="text-[10px] text-gray-400">{formatPostTime(comment.createdAt)}</span>
+                                <span className="text-[10px] text-gray-400">{formatRelativeTime(comment.createdAt)}</span>
                               </div>
                               <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap font-sans leading-relaxed">{comment.content}</p>
                             </div>
@@ -1263,7 +1266,7 @@ export default function Feed({
                     {/* Add Comment Input */}
                     <div className="flex space-x-3 items-center">
                       <img
-                        src={currentUser.avatar}
+                        loading="lazy" src={currentUser.avatar}
                         alt={currentUser.username}
                         className="h-8 w-8 rounded-full object-cover border border-gray-100 dark:border-gray-800"
                       />
@@ -1385,7 +1388,7 @@ export default function Feed({
                   onClick={() => setShareStep('options')}
                   className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center cursor-pointer"
                 >
-                  ← Back to options
+                  Ã¢â€ Â Back to options
                 </button>
 
                 {/* Recipient Search */}
@@ -1412,7 +1415,7 @@ export default function Feed({
                       >
                         <div className="flex items-center space-x-3">
                           <img
-                            src={user.avatar}
+                            loading="lazy" src={user.avatar}
                             alt={user.username}
                             className="h-9 w-9 rounded-full object-cover border border-gray-100 dark:border-gray-800"
                           />

@@ -384,7 +384,7 @@ export default function PostCreate({ currentUser, onPostCreated }: PostCreatePro
         <div className="flex items-center justify-between border-b border-gray-100 pb-3 dark:border-gray-800/80">
           <div className="flex items-center space-x-3">
             <img
-              src={currentUser.avatar}
+              loading="lazy" src={currentUser.avatar}
               alt={currentUser.username}
               className="h-10 w-10 rounded-full object-cover border border-gray-100 dark:border-gray-800 shrink-0 shadow-xs"
             />
@@ -527,10 +527,10 @@ export default function PostCreate({ currentUser, onPostCreated }: PostCreatePro
                   onClick={() => selectMention(u.username)}
                   className="flex w-full items-center space-x-2 rounded-lg px-2.5 py-1.5 text-left text-xs text-gray-700 hover:bg-indigo-50 dark:text-zinc-300 dark:hover:bg-zinc-900/80 transition cursor-pointer"
                 >
-                  <img src={u.avatar} alt={u.username} className="h-5 w-5 rounded-full object-cover" />
+                  <img loading="lazy" src={u.avatar} alt={u.username} className="h-5 w-5 rounded-full object-cover" />
                   <span className="font-bold truncate">@{u.username}</span>
                   {u.verified && (
-                    <span className="flex h-3 w-3 items-center justify-center rounded-full bg-blue-500 text-[8px] font-bold text-white">✓</span>
+                    <span className="flex h-3 w-3 items-center justify-center rounded-full bg-blue-500 text-[8px] font-bold text-white">âœ“</span>
                   )}
                 </button>
               ))}
@@ -641,7 +641,7 @@ export default function PostCreate({ currentUser, onPostCreated }: PostCreatePro
                   key={u.id}
                   className="inline-flex items-center space-x-1 rounded-full bg-zinc-100 dark:bg-zinc-800 px-2.5 py-0.5 text-[10px] font-bold text-zinc-700 dark:text-zinc-300"
                 >
-                  <img src={u.avatar} alt={u.username} className="h-3.5 w-3.5 rounded-full object-cover" />
+                  <img loading="lazy" src={u.avatar} alt={u.username} className="h-3.5 w-3.5 rounded-full object-cover" />
                   <span>@{u.username}</span>
                   <button 
                     type="button" 
@@ -871,7 +871,7 @@ export default function PostCreate({ currentUser, onPostCreated }: PostCreatePro
                     }`}
                   >
                     <div className="flex items-center space-x-1.5 overflow-hidden">
-                      <img src={u.avatar} alt={u.username} className="h-6 w-6 rounded-full object-cover shrink-0" />
+                      <img loading="lazy" src={u.avatar} alt={u.username} className="h-6 w-6 rounded-full object-cover shrink-0" />
                       <span className="text-[10px] font-bold text-gray-800 dark:text-zinc-200 truncate">@{u.username}</span>
                     </div>
                     {isTagged && (

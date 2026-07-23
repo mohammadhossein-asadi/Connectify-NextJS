@@ -2,9 +2,9 @@
   "users": [
     {
       "id": "gemini-bot",
-      "email": "bot@gemini.ai",
-      "username": "GeminiBot",
-      "bio": "Official AI Assistant for Connectify. DM me to chat or mention me in a post to get a creative summary!",
+      "email": "bot@openrouter.ai",
+      "username": "OpenRouterBot",
+      "bio": "Official AI Assistant for Connectify. Powered by OpenRouter (openrouter/free). DM me to chat or mention me in a post to get a creative summary!",
       "avatar": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=150&auto=format&fit=crop&q=80",
       "cover": "https://images.unsplash.com/photo-1618005198143-e528346d285e?w=800&auto=format&fit=crop&q=80",
       "followers": [
@@ -142,26 +142,7 @@
       "createdAt": "2026-07-06T15:44:38.901Z"
     }
   ],
-  "stories": [
-    {
-      "id": "story-1",
-      "userId": "user-1",
-      "username": "SarahJenkins",
-      "userAvatar": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80",
-      "image": "https://images.unsplash.com/photo-1503899036084-c55cdd92da26?w=400&auto=format&fit=crop&q=80",
-      "createdAt": "2026-07-06T19:44:38.901Z",
-      "expiresAt": "2026-07-07T19:44:38.901Z"
-    },
-    {
-      "id": "story-2",
-      "userId": "user-2",
-      "username": "AlexRivera",
-      "userAvatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
-      "image": "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=400&auto=format&fit=crop&q=80",
-      "createdAt": "2026-07-06T19:44:38.901Z",
-      "expiresAt": "2026-07-07T19:44:38.901Z"
-    }
-  ],
+  "stories": [],
   "notifications": [
     {
       "id": "notif-1",

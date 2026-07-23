@@ -145,7 +145,7 @@ export default function Bookmarks({
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center space-x-2.5">
                     <img
-                      src={post.userAvatar}
+                      loading="lazy" src={post.userAvatar}
                       alt={post.username}
                       className="h-8 w-8 rounded-full object-cover border border-gray-100"
                     />
@@ -175,7 +175,7 @@ export default function Bookmarks({
                 {(post.image || (post.images && post.images.length > 0)) && (
                   <div className="mb-3 overflow-hidden rounded-xl bg-gray-50 dark:bg-gray-950">
                     <img
-                      src={post.images?.[0] || post.image}
+                      loading="lazy" src={post.images?.[0] || post.image}
                       alt="Bookmarks preview"
                       className="h-28 w-full object-cover"
                     />

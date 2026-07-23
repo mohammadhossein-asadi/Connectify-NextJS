@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { formatRelativeTime } from '../lib/utils';
 import { Story, User } from '../types';
 import { X, ChevronLeft, ChevronRight, Clock, Eye, Trash2, Send } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -192,7 +193,7 @@ export default function StoriesModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-950/95 backdrop-blur-md p-0 sm:p-4 select-none">
+    <div role="dialog" aria-modal="true" aria-label="Story viewer" className="fixed inset-0 z-50 flex items-center justify-center bg-gray-950/95 backdrop-blur-md p-0 sm:p-4 select-none">
       <div className="relative flex h-full w-full max-w-lg flex-col bg-black text-white sm:h-[85vh] sm:rounded-2xl sm:border sm:border-gray-800 overflow-hidden shadow-2xl">
         {/* Progress Bars Indicator */}
         <div className="absolute top-3 left-0 right-0 z-20 flex space-x-1 px-4">
@@ -220,7 +221,7 @@ export default function StoriesModal({
               <h4 className="text-xs font-bold">{currentStory.username}</h4>
               <p className="flex items-center text-[10px] text-white/70">
                 <Clock className="mr-1 h-3 w-3" />
-                {formatStoryTime(currentStory.createdAt)}
+                {formatRelativeTime(currentStory.createdAt)}
               </p>
             </div>
           </div>
@@ -344,7 +345,7 @@ export default function StoriesModal({
             <div className="space-y-3.5">
               {/* Quick Reaction Emojis */}
               <div className="flex justify-center space-x-4">
-                {['❤️', '😂', '😮', '😢', '🔥', '👏'].map((emoji) => {
+                {['Ã¢ÂÂ¤Ã¯Â¸Â', 'Ã°Å¸Ëœâ€š', 'Ã°Å¸ËœÂ®', 'Ã°Å¸ËœÂ¢', 'Ã°Å¸â€Â¥', 'Ã°Å¸â€˜Â'].map((emoji) => {
                   const hasReacted = currentStory.reactions?.some(
                     (r) => r.userId === currentUser.id && r.emoji === emoji
                   );

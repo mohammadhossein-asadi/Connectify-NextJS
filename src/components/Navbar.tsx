@@ -37,7 +37,7 @@ export default function Navbar({
   ).length;
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-gray-100 bg-white/80 backdrop-blur-md dark:border-gray-800 dark:bg-gray-950/80">
+    <header role="banner" className="sticky top-0 z-40 w-full border-b border-gray-100 bg-white/80 backdrop-blur-md dark:border-gray-800 dark:bg-gray-950/80">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
         {/* Logo and Brand */}
         <div 
@@ -58,7 +58,7 @@ export default function Navbar({
             <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
             <input
               type="text"
-              placeholder="Search posts, tags, users..."
+              placeholder="Search posts, tags, users..." aria-label="Search posts, tags, and users"
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
@@ -78,7 +78,7 @@ export default function Navbar({
             <button
               onClick={() => setShowThemeMenu(!showThemeMenu)}
               className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-50 text-gray-600 hover:bg-gray-100 dark:bg-gray-900/50 dark:text-gray-300 dark:hover:bg-gray-800 border border-transparent dark:border-zinc-800/40"
-              title="Change Theme"
+              title="Change Theme" aria-label="Change color theme"
             >
               {theme === 'light' && <Sun className="h-4.5 w-4.5 text-amber-500" />}
               {theme === 'dark' && <Moon className="h-4.5 w-4.5 text-indigo-400" />}
@@ -150,7 +150,7 @@ export default function Navbar({
                 ? 'bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400'
                 : 'bg-gray-50 text-gray-600 hover:bg-gray-100 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800'
             }`}
-            title="Explore discovery"
+            title="Explore discovery" aria-label="Explore discovery"
           >
             <Compass className="h-4.5 w-4.5" />
           </button>
@@ -163,7 +163,7 @@ export default function Navbar({
                 ? 'bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400'
                 : 'bg-gray-50 text-gray-600 hover:bg-gray-100 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800'
             }`}
-            title="Notifications list"
+            title="Notifications list" aria-label="Notifications"
           >
             <Bell className="h-4.5 w-4.5" />
             {unreadNotificationsCount > 0 && (
@@ -181,7 +181,7 @@ export default function Navbar({
                 ? 'bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400'
                 : 'bg-gray-50 text-gray-600 hover:bg-gray-100 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800'
             }`}
-            title="Direct messages"
+            title="Direct messages" aria-label="Direct messages"
           >
             <MessageSquare className="h-4.5 w-4.5" />
             {unreadMessagesCount > 0 && (
@@ -204,7 +204,7 @@ export default function Navbar({
               />
               {currentUser.verified && (
                 <span className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-blue-500 text-[8px] text-white">
-                  ✓
+                  Ã¢Å“â€œ
                 </span>
               )}
             </div>
@@ -217,7 +217,7 @@ export default function Navbar({
           <button
             onClick={onLogout}
             className="hidden h-9 w-9 items-center justify-center rounded-full bg-rose-50/50 text-rose-500 transition hover:bg-rose-100 dark:bg-rose-950/20 dark:text-rose-400 dark:hover:bg-rose-950/50 lg:flex"
-            title="Logout"
+            title="Logout" aria-label="Logout"
           >
             <LogOut className="h-4.5 w-4.5" />
           </button>
