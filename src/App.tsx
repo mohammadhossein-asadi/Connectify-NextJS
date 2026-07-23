@@ -1,18 +1,31 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { User, Post, Story, Notification, Message } from './types';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
-import Feed from './components/Feed';
-import Explore from './components/Explore';
-import Messages from './components/Messages';
-import Notifications from './components/Notifications';
-import Bookmarks from './components/Bookmarks';
-import Analytics from './components/Analytics';
-import Settings from './components/Settings';
-import Profile from './components/Profile';
-import AuthModal from './components/AuthModal';
-import StoriesModal from './components/StoriesModal';
+import MobileNav from './components/MobileNav';
 import TrendingHashtags from './components/TrendingHashtags';
+import { api } from './lib/api';
+import ErrorBoundary from './components/ErrorBoundary';
+import { ToastProvider } from './components/Toast';
+
+// Lazy load tab components for code splitting
+const Feed = lazy(() => import('./components/Feed'));
+const Explore = lazy(() => import('./components/Explore'));
+const Messages = lazy(() => import('./components/Messages'));
+const Notifications = lazy(() => import('./components/Notifications'));
+const Bookmarks = lazy(() => import('./components/Bookmarks'));
+const Analytics = lazy(() => import('./components/Analytics'));
+const Settings = lazy(() => import('./components/Settings'));
+const Profile = lazy(() => import('./components/Profile'));
+const AuthModal = lazy(() => import('./components/AuthModal'));
+const StoriesModal = lazy(() => import('./components/StoriesModal'));
+
+// Loading fallback for lazy components
+const TabLoader = () => (
+  <div className='flex items-center justify-center py-20'>
+    <div className='h-8 w-8 animate-spin rounded-full border-2 border-gray-200 border-t-indigo-600' />
+  </div>
+);
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Sparkles, 
@@ -107,8 +120,8 @@ export default function App() {
   useEffect(() => {
     if (!currentUser) return;
     fetchPeriodicData();
-    // Refresh notifications, stories, and recommendations every 5 seconds
-    const interval = setInterval(fetchPeriodicData, 5000);
+    // Refresh notifications, stories, and recommendations every 15 seconds
+    const interval = setInterval(fetchPeriodicData, 15000);
     return () => clearInterval(interval);
   }, [currentUser]);
 
@@ -310,7 +323,8 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 transition-colors duration-300">
+    <ToastProvider>
+    <div className="min-h-screen bg-gray-50 pb-16 lg:pb-0 dark:bg-gray-950 transition-colors duration-300">
       {/* Top Brand Navbar */}
       <Navbar
         currentUser={currentUser}
@@ -352,7 +366,7 @@ export default function App() {
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.22, ease: 'easeInOut' }}
               >
-                {renderTabContent()}
+                <ErrorBoundary><Suspense fallback={<TabLoader />}>{renderTabContent()}</Suspense></ErrorBoundary>
               </motion.div>
             </AnimatePresence>
           </div>
@@ -438,7 +452,7 @@ export default function App() {
 
             {/* Premium Credit line */}
             <div className="text-center text-[10px] text-gray-400">
-              <p>© 2026 Connectify Inc.</p>
+<p>© 2026 Connectify Inc.</p>
               <p className="mt-0.5">Crafted with Vite, React & Google Gemini</p>
             </div>
           </div>
@@ -455,6 +469,16 @@ export default function App() {
           onClose={() => setActiveStoryIndex(null)}
         />
       )}
+    
+      {/* Mobile Bottom Navigation */}
+      <MobileNav
+        currentUser={currentUser}
+        notifications={notifications}
+        messages={messages}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+      />
     </div>
+    </ToastProvider>
   );
 }

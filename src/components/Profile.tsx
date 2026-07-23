@@ -77,7 +77,7 @@ function ProfilePostMedia({ post }: { post: Post }) {
     }
     return (
       <img 
-        src={item.url} 
+        loading="lazy" src={item.url} 
         alt="Post content preview" 
         className="h-full w-full object-contain max-h-[40vh] md:max-h-full"
       />
@@ -96,7 +96,7 @@ function ProfilePostMedia({ post }: { post: Post }) {
         />
       ) : (
         <img 
-          src={activeItem.url} 
+          loading="lazy" src={activeItem.url} 
           alt={`Post Content preview ${index + 1}`} 
           className="h-full w-full object-contain max-h-[40vh] md:max-h-full"
         />
@@ -296,7 +296,7 @@ export default function Profile({
         <div className="relative h-44 sm:h-56 bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-blue-950/40 dark:to-indigo-950/40">
           {currentUser.cover ? (
             <img 
-              src={currentUser.cover} 
+              loading="lazy" src={currentUser.cover} 
               alt="Cover header" 
               className="h-full w-full object-cover"
             />
@@ -323,7 +323,7 @@ export default function Profile({
             {/* Circle bordered Avatar */}
             <div className="relative h-28 w-28 sm:h-32 sm:w-32 rounded-full border-4 border-white bg-gray-50 dark:border-gray-900 shadow-lg overflow-hidden shrink-0">
               <img 
-                src={currentUser.avatar} 
+                loading="lazy" src={currentUser.avatar} 
                 alt={currentUser.username} 
                 className="h-full w-full object-cover"
               />
@@ -340,7 +340,7 @@ export default function Profile({
                     className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-blue-500 text-[10px] text-white font-bold shadow-xs border border-white dark:border-gray-900"
                     title="Verified Professional badge"
                   >
-                    ✓
+                    âœ“
                   </span>
                 )}
                 <span className="rounded-full bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 text-[10px] font-bold px-2.5 py-0.5 border border-indigo-100/50 dark:border-indigo-950/50">
@@ -484,7 +484,7 @@ export default function Profile({
                       {/* Visual Preview */}
                       {displayImage && (
                         <img 
-                          src={displayImage} 
+                          loading="lazy" src={displayImage} 
                           alt="Post media" 
                           className="h-full w-full object-cover group-hover:scale-105 transition duration-500"
                         />
@@ -578,7 +578,7 @@ export default function Profile({
                         <div className="space-y-3 flex-1 min-w-0">
                           <div className="flex items-center space-x-2">
                             <span className="flex h-5 items-center justify-center rounded-lg bg-amber-50 dark:bg-amber-950/30 text-[10px] font-bold text-amber-600 dark:text-amber-400 border border-amber-100/50 px-2">
-                              🕒 Scheduled {timeLeftStr}
+                              ðŸ•’ Scheduled {timeLeftStr}
                             </span>
                             <span className="text-[11px] text-gray-400 dark:text-gray-500 font-medium">
                               {scheduledDate.toLocaleString()}
@@ -599,18 +599,18 @@ export default function Profile({
                                       <Play className="h-4 w-4 text-white fill-white" />
                                     </div>
                                   ) : (
-                                    <img src={m.url} className="h-full w-full object-cover" />
+                                    <img loading="lazy" src={m.url} className="h-full w-full object-cover" />
                                   )}
                                 </div>
                               ))}
                               {!post.media && post.images?.map((img, idx) => (
                                 <div key={idx} className="h-14 w-14 rounded-lg bg-gray-50 dark:bg-gray-800 overflow-hidden shrink-0 border border-gray-100 dark:border-gray-800">
-                                  <img src={img} className="h-full w-full object-cover" />
+                                  <img loading="lazy" src={img} className="h-full w-full object-cover" />
                                 </div>
                               ))}
                               {!post.media && !post.images && post.image && (
                                 <div className="h-14 w-14 rounded-lg bg-gray-50 dark:bg-gray-800 overflow-hidden shrink-0 border border-gray-100 dark:border-gray-800">
-                                  <img src={post.image} className="h-full w-full object-cover" />
+                                  <img loading="lazy" src={post.image} className="h-full w-full object-cover" />
                                 </div>
                               )}
                               {!post.media && !post.images && post.video && (
@@ -681,7 +681,7 @@ export default function Profile({
               <div className="p-4 border-b border-zinc-100 dark:border-zinc-800/80 flex items-center justify-between shrink-0">
                 <div className="flex items-center space-x-3">
                   <img 
-                    src={currentUser.avatar} 
+                    loading="lazy" src={currentUser.avatar} 
                     alt={currentUser.username} 
                     className="h-9 w-9 rounded-full object-cover border border-zinc-100 dark:border-zinc-800"
                   />
@@ -691,7 +691,7 @@ export default function Profile({
                         @{currentUser.username}
                       </span>
                       {currentUser.verified && (
-                        <span className="bg-blue-500 text-white rounded-full h-3 w-3 flex items-center justify-center text-[7px] font-bold">✓</span>
+                        <span className="bg-blue-500 text-white rounded-full h-3 w-3 flex items-center justify-center text-[7px] font-bold">âœ“</span>
                       )}
                     </div>
                     <p className="text-[10px] text-gray-400">Author</p>
@@ -734,7 +734,7 @@ export default function Profile({
                     selectedPost.comments.map((comment: Comment) => (
                       <div key={comment.id} className="flex items-start space-x-3 text-xs">
                         <img 
-                          src={comment.userAvatar} 
+                          loading="lazy" src={comment.userAvatar} 
                           alt={comment.username} 
                           className="h-7 w-7 rounded-full object-cover border border-zinc-100 dark:border-zinc-800 mt-0.5 shrink-0"
                         />
@@ -839,11 +839,11 @@ export default function Profile({
                   return (
                     <div key={user.id} className="flex items-center justify-between p-1 rounded-lg">
                       <div className="flex items-center space-x-2.5 min-w-0">
-                        <img src={user.avatar} alt={user.username} className="h-8.5 w-8.5 rounded-full object-cover border border-zinc-100 dark:border-zinc-800" />
+                        <img loading="lazy" src={user.avatar} alt={user.username} className="h-8.5 w-8.5 rounded-full object-cover border border-zinc-100 dark:border-zinc-800" />
                         <div className="min-w-0">
                           <div className="flex items-center space-x-1">
                             <span className="text-xs font-bold text-gray-900 dark:text-white truncate">@{user.username}</span>
-                            {user.verified && <span className="bg-blue-500 text-white rounded-full h-2.5 w-2.5 flex items-center justify-center text-[6px]">✓</span>}
+                            {user.verified && <span className="bg-blue-500 text-white rounded-full h-2.5 w-2.5 flex items-center justify-center text-[6px]">âœ“</span>}
                           </div>
                           <p className="text-[9px] text-gray-400 truncate max-w-[150px]">{user.bio || 'Wandering explorer'}</p>
                         </div>
@@ -904,11 +904,11 @@ export default function Profile({
                 followingUsersList.map((user) => (
                   <div key={user.id} className="flex items-center justify-between p-1 rounded-lg">
                     <div className="flex items-center space-x-2.5 min-w-0">
-                      <img src={user.avatar} alt={user.username} className="h-8.5 w-8.5 rounded-full object-cover border border-zinc-100 dark:border-zinc-800" />
+                      <img loading="lazy" src={user.avatar} alt={user.username} className="h-8.5 w-8.5 rounded-full object-cover border border-zinc-100 dark:border-zinc-800" />
                       <div className="min-w-0">
                         <div className="flex items-center space-x-1">
                           <span className="text-xs font-bold text-gray-900 dark:text-white truncate">@{user.username}</span>
-                          {user.verified && <span className="bg-blue-500 text-white rounded-full h-2.5 w-2.5 flex items-center justify-center text-[6px]">✓</span>}
+                          {user.verified && <span className="bg-blue-500 text-white rounded-full h-2.5 w-2.5 flex items-center justify-center text-[6px]">âœ“</span>}
                         </div>
                         <p className="text-[9px] text-gray-400 truncate max-w-[150px]">{user.bio || 'Wandering explorer'}</p>
                       </div>

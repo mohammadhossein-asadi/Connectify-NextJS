@@ -91,7 +91,7 @@ export default function Sidebar({
   ];
 
   return (
-    <div className="flex h-full flex-col justify-between p-4">
+    <div role="navigation" aria-label="Main navigation" className="flex h-full flex-col justify-between p-4">
       {/* Upper Navigation Links */}
       <div className="space-y-1.5">
         {menuItems.map((item) => {
@@ -102,6 +102,7 @@ export default function Sidebar({
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id)}
+              aria-current={isActive ? "page" : undefined}
               className={`flex w-full items-center justify-between rounded-xl px-4 py-3 text-sm font-semibold transition-all duration-200 ${
                 isActive
                   ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/15'
@@ -141,7 +142,7 @@ export default function Sidebar({
                   onClick={() => setActiveTab('settings')}
                   className="mt-2 text-[11px] font-bold text-blue-600 hover:underline dark:text-blue-400"
                 >
-                  Verify Now →
+                  Verify Now ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢
                 </button>
               </div>
             </div>
@@ -153,13 +154,13 @@ export default function Sidebar({
           <div className="flex items-center space-x-3">
             <div className="relative">
               <img
-                src={currentUser.avatar}
+                loading="lazy" src={currentUser.avatar}
                 alt={currentUser.username}
                 className="h-10 w-10 rounded-full object-cover border border-gray-100 dark:border-gray-800"
               />
               {currentUser.verified && (
                 <span className="absolute -bottom-1 -right-1 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-blue-500 text-[9px] text-white font-bold border-2 border-white dark:border-gray-950">
-                  ✓
+                  ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬Å“ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œ
                 </span>
               )}
             </div>

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { formatRelativeTime } from '../lib/utils';
 import { User, Notification } from '../types';
 import { Heart, MessageSquare, UserPlus, Info, Check, Trash2, Sparkles, CheckCircle, BellRing, BellOff, AtSign } from 'lucide-react';
 
@@ -243,7 +244,7 @@ export default function Notifications({
                       ) : null}
                       <span>{notif.content}</span>
                     </p>
-                    <span className="text-[10px] text-gray-400">{formatNotifTime(notif.createdAt)}</span>
+                    <span className="text-[10px] text-gray-400">{formatRelativeTime(notif.createdAt)}</span>
                   </div>
                 </div>
 

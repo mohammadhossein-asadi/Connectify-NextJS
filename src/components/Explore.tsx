@@ -473,7 +473,7 @@ export default function Explore({
                           {/* Media File or Gradient Placeholder */}
                           {post.image ? (
                             <img
-                              src={post.image}
+                              loading="lazy" src={post.image}
                               alt={post.username}
                               className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                               referrerPolicy="no-referrer"
@@ -496,7 +496,7 @@ export default function Explore({
                             <div className={`h-full w-full bg-gradient-to-br ${textGradients[gradientIdx]} p-4 flex flex-col justify-between text-white transition duration-500 group-hover:brightness-95`}>
                               <div className="flex items-center space-x-1.5 opacity-90">
                                 <img
-                                  src={post.userAvatar}
+                                  loading="lazy" src={post.userAvatar}
                                   alt={post.username}
                                   className="h-5 w-5 rounded-full object-cover border border-white/20"
                                 />
@@ -555,11 +555,11 @@ export default function Explore({
                       return (
                         <div key={u.id} className="flex items-center justify-between p-4.5 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-150 dark:border-zinc-800 shadow-xs animate-fade-in hover:border-zinc-250 dark:hover:border-zinc-700 transition">
                           <div className="flex items-center space-x-3.5 overflow-hidden">
-                            <img src={u.avatar} alt={u.username} className="h-11 w-11 rounded-full object-cover shrink-0 border border-zinc-100 dark:border-zinc-800 shadow-xs" />
+                            <img loading="lazy" src={u.avatar} alt={u.username} className="h-11 w-11 rounded-full object-cover shrink-0 border border-zinc-100 dark:border-zinc-800 shadow-xs" />
                             <div className="overflow-hidden">
                               <div className="flex items-center space-x-1.5">
                                 <span className="text-xs font-bold text-gray-950 dark:text-white truncate">@{u.username}</span>
-                                {u.verified && <span className="flex h-3.5 w-3.5 items-center justify-center rounded-full bg-blue-500 text-[8px] font-bold text-white shrink-0">✓</span>}
+                                {u.verified && <span className="flex h-3.5 w-3.5 items-center justify-center rounded-full bg-blue-500 text-[8px] font-bold text-white shrink-0">âœ“</span>}
                               </div>
                               {u.bio && <p className="text-[10px] text-gray-500 dark:text-zinc-400 truncate max-w-xs sm:max-w-md mt-0.5">{u.bio}</p>}
                             </div>
@@ -667,7 +667,7 @@ export default function Explore({
                       {/* Media File or Gradient Placeholder */}
                       {post.image ? (
                         <img
-                          src={post.image}
+                          loading="lazy" src={post.image}
                           alt={post.username}
                           className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                           referrerPolicy="no-referrer"
@@ -690,7 +690,7 @@ export default function Explore({
                         <div className={`h-full w-full bg-gradient-to-br ${textGradients[gradientIdx]} p-4 flex flex-col justify-between text-white transition duration-500 group-hover:brightness-95`}>
                           <div className="flex items-center space-x-1.5 opacity-90">
                             <img
-                              src={post.userAvatar}
+                              loading="lazy" src={post.userAvatar}
                               alt={post.username}
                               className="h-5 w-5 rounded-full object-cover border border-white/20"
                             />
@@ -833,7 +833,7 @@ export default function Explore({
                       <div className="flex items-center space-x-3 overflow-hidden">
                         <div className="relative shrink-0">
                           <img
-                            src={user.avatar}
+                            loading="lazy" src={user.avatar}
                             alt={user.username}
                             className="h-9.5 w-9.5 rounded-full object-cover border border-zinc-100 dark:border-zinc-800"
                           />
@@ -849,7 +849,7 @@ export default function Explore({
                               {user.username}
                             </span>
                             {user.verified && (
-                              <span className="bg-blue-500 text-white rounded-full h-3 w-3 flex items-center justify-center text-[7px] font-bold">✓</span>
+                              <span className="bg-blue-500 text-white rounded-full h-3 w-3 flex items-center justify-center text-[7px] font-bold">âœ“</span>
                             )}
                           </div>
                           <p className="text-[10px] text-gray-400 dark:text-zinc-500 truncate mt-0.5">
@@ -909,7 +909,7 @@ export default function Explore({
             <div className="relative bg-zinc-950 flex items-center justify-center h-48 md:h-full shrink-0 border-r border-zinc-100 dark:border-zinc-800/60">
               {activeSelectedPost.image ? (
                 <img
-                  src={activeSelectedPost.image}
+                  loading="lazy" src={activeSelectedPost.image}
                   alt={activeSelectedPost.username}
                   className="w-full h-full object-cover"
                   referrerPolicy="no-referrer"
@@ -928,7 +928,7 @@ export default function Explore({
                 <div className={`w-full h-full bg-gradient-to-br ${textGradients[posts.indexOf(activeSelectedPost) % textGradients.length]} p-8 flex flex-col justify-between text-white`}>
                   <div className="flex items-center space-x-2">
                     <img
-                      src={activeSelectedPost.userAvatar}
+                      loading="lazy" src={activeSelectedPost.userAvatar}
                       alt={activeSelectedPost.username}
                       className="h-8 w-8 rounded-full object-cover border border-white/20"
                     />
@@ -949,7 +949,7 @@ export default function Explore({
               <div className="flex items-center justify-between p-4 border-b border-zinc-100 dark:border-zinc-800/80">
                 <div className="flex items-center space-x-3 min-w-0">
                   <img
-                    src={activeSelectedPost.userAvatar}
+                    loading="lazy" src={activeSelectedPost.userAvatar}
                     alt={activeSelectedPost.username}
                     className="h-9.5 w-9.5 rounded-full object-cover border border-zinc-200 dark:border-zinc-800"
                   />
@@ -959,7 +959,7 @@ export default function Explore({
                         {activeSelectedPost.username}
                       </span>
                       {activeSelectedPost.userVerified && (
-                        <span className="bg-blue-500 text-white rounded-full h-3.5 w-3.5 flex items-center justify-center text-[8px] font-bold shrink-0">✓</span>
+                        <span className="bg-blue-500 text-white rounded-full h-3.5 w-3.5 flex items-center justify-center text-[8px] font-bold shrink-0">âœ“</span>
                       )}
                     </div>
                     <span className="text-[10px] text-gray-400 dark:text-zinc-500 block">
@@ -997,7 +997,7 @@ export default function Explore({
                 {/* Caption / Description */}
                 <div className="flex items-start space-x-3 pb-3 border-b border-zinc-100 dark:border-zinc-800/50">
                   <img
-                    src={activeSelectedPost.userAvatar}
+                    loading="lazy" src={activeSelectedPost.userAvatar}
                     alt={activeSelectedPost.username}
                     className="h-8.5 w-8.5 rounded-full object-cover shrink-0"
                   />
@@ -1037,7 +1037,7 @@ export default function Explore({
                     activeSelectedPost.comments.map((comment) => (
                       <div key={comment.id} className="flex items-start space-x-2.5 text-xs">
                         <img
-                          src={comment.userAvatar}
+                          loading="lazy" src={comment.userAvatar}
                           alt={comment.username}
                           className="h-7 w-7 rounded-full object-cover shrink-0 border border-zinc-100 dark:border-zinc-800"
                         />
