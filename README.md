@@ -7,7 +7,11 @@
 A production-grade social network built with React 19, Vite 6, Express, and JWT authentication — featuring Google Gemini AI content generation, OpenRouter-powered chatbot, stories, direct messaging, analytics, and 29+ REST API endpoints.
 
 [![Live Demo](https://img.shields.io/badge/Live_Demo-connectify.ai-0a0a0a?style=for-the-badge&labelColor=0a0a0a&color=3b82f6)](https://connectify.ai)
-[![License: MIT](https://img.shields.io/badge/License-MIT-0a0a0a?style=for-the-badge&labelColor=0a0a0a&color=22c55e)](#)
+[![License: MIT](https://img.shields.io/badge/License-MIT-0a0a0a?style=for-the-badge&labelColor=0a0a0a&color=22c55e)](LICENSE)
+[![React 19](https://img.shields.io/badge/React_19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
+[![Vite 6](https://img.shields.io/badge/Vite_6-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vite.dev/)
+[![Express](https://img.shields.io/badge/Express_4-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com/)
+[![TypeScript](https://img.shields.io/badge/TypeScript_5.8-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 
 </div>
 
@@ -199,15 +203,17 @@ The Express server is compiled to `dist/server.cjs` via esbuild and deployed as 
 
 ---
 
-## Author
+## License
+
+This project is licensed under the [MIT License](LICENSE).
+
+---
+
+<div align="center">
 
 **Mohammadhossein Asadi** — Frontend & Full-Stack Engineer
 
 [![GitHub](https://img.shields.io/badge/GitHub-mohammadhossein--asadi-0a0a0a?style=flat-square&logo=github)](https://github.com/mohammadhossein-asadi)
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-mohammadhossein--asadi-0a66c2?style=flat-square&logo=linkedin)](https://linkedin.com/in/mohammadhossein-asadi)
 
----
-
-## License
-
-This project is licensed under the [MIT License](LICENSE).
+</div>
