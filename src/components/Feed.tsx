@@ -3,9 +3,7 @@ import { formatRelativeTime } from '../lib/utils';
 import { User, Post, Story, Comment } from '../types';
 import StoriesList from './StoriesList';
 import PostCreate from './PostCreate';
-import { formatRelativeTime } from '../lib/utils';
-import { motion, AnimatePresence } from 'motion/react';
-import { formatRelativeTime } from '../lib/utils';
+import { motion, AnimatePresence, type Variants } from 'motion/react';
 import { 
   Heart, 
   MessageCircle, 
@@ -332,7 +330,7 @@ const feedContainerVariants = {
   },
 };
 
-const feedItemVariants = {
+const feedItemVariants: Variants = {
   hidden: { opacity: 0, y: 20 },
   show: {
     opacity: 1,
@@ -1403,10 +1401,8 @@ export default function Feed({
                 {/* Recipient list */}
                 <div className="max-h-60 overflow-y-auto space-y-2 pr-1">
                   {networkUsers
-                    .filter(
-                      (u) =>
-                        u.username.toLowerCase().includes(dmSearchQuery.toLowerCase()) ||
-                        u.name.toLowerCase().includes(dmSearchQuery.toLowerCase())
+                    .filter((u) =>
+                      u.username.toLowerCase().includes(dmSearchQuery.toLowerCase())
                     )
                     .map((user) => (
                       <div
@@ -1419,12 +1415,9 @@ export default function Feed({
                             alt={user.username}
                             className="h-9 w-9 rounded-full object-cover border border-gray-100 dark:border-gray-800"
                           />
-                          <div>
-                            <p className="text-xs font-bold text-gray-900 dark:text-white">
-                              {user.name}
-                            </p>
-                            <p className="text-[10px] text-gray-400">@{user.username}</p>
-                          </div>
+                          <p className="text-xs font-bold text-gray-900 dark:text-white">
+                            @{user.username}
+                          </p>
                         </div>
                         <button
                           onClick={() => handleSendPostAsDm(user.id)}

@@ -340,9 +340,9 @@ export default function Messages({
                           <span>{messageTime}</span>
                           {isMe && (
                             m.read ? (
-                              <CheckCheck className="h-3 w-3 text-emerald-500 dark:text-emerald-400" title="Read" />
+                              <CheckCheck className="h-3 w-3 text-emerald-500 dark:text-emerald-400" role="img" aria-label="Read" />
                             ) : (
-                              <Check className="h-3 w-3 text-gray-400" title="Sent" />
+                              <Check className="h-3 w-3 text-gray-400" role="img" aria-label="Sent" />
                             )
                           )}
                         </span>

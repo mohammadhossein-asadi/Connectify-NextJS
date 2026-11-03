@@ -4,7 +4,6 @@ import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
 import MobileNav from './components/MobileNav';
 import TrendingHashtags from './components/TrendingHashtags';
-import { api } from './lib/api';
 import ErrorBoundary from './components/ErrorBoundary';
 import { ToastProvider } from './components/Toast';
 
