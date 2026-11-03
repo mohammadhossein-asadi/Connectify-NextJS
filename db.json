@@ -73,6 +73,66 @@
       "verified": false,
       "bookmarks": [],
       "createdAt": "2026-11-03T17:09:16.162Z"
+    },
+    {
+      "id": "user-2on0jf5px",
+      "email": "atomtest2@example.com",
+      "username": "atomtest2",
+      "bio": "Hey there! I am atomtest2, a proud member of Connectify.",
+      "avatar": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80",
+      "cover": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80",
+      "followers": [],
+      "following": [
+        "gemini-bot"
+      ],
+      "verified": false,
+      "bookmarks": [],
+      "createdAt": "2026-11-03T17:09:16.404Z"
+    },
+    {
+      "id": "user-t45rkn5oq",
+      "email": "atomtest3@example.com",
+      "username": "atomtest3",
+      "bio": "Hey there! I am atomtest3, a proud member of Connectify.",
+      "avatar": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80",
+      "cover": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80",
+      "followers": [],
+      "following": [
+        "gemini-bot"
+      ],
+      "verified": false,
+      "bookmarks": [],
+      "createdAt": "2026-11-03T17:09:16.640Z"
+    },
+    {
+      "id": "user-ugn3l3q1c",
+      "email": "atomtest4@example.com",
+      "username": "atomtest4",
+      "bio": "Hey there! I am atomtest4, a proud member of Connectify.",
+      "avatar": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80",
+      "cover": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80",
+      "followers": [],
+      "following": [
+        "gemini-bot"
+      ],
+      "verified": false,
+      "bookmarks": [],
+      "createdAt": "2026-11-03T17:09:16.978Z"
+    },
+    {
+      "id": "user-v1afv7yp9",
+      "email": "atomtest5@example.com",
+      "username": "atomtest5",
+      "bio": "Hey there! I am atomtest5, a proud member of Connectify.",
+      "avatar": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80",
+      "cover": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80",
+      "followers": [],
+      "following": [
+        "gemini-bot"
+      ],
+      "verified": false,
+      "bookmarks": [],
+      "createdAt": "2026-11-03T17:09:17.216Z"
     }
   ],
   "posts": [
@@ -190,6 +250,38 @@
       "content": "Welcome to Connectify! Start exploring the feed, saving posts, and DMing GeminiBot for premium AI responses.",
       "read": false,
       "createdAt": "2026-11-03T17:09:16.164Z"
+    },
+    {
+      "id": "notif-4kknj63js",
+      "userId": "user-2on0jf5px",
+      "type": "system",
+      "content": "Welcome to Connectify! Start exploring the feed, saving posts, and DMing GeminiBot for premium AI responses.",
+      "read": false,
+      "createdAt": "2026-11-03T17:09:16.406Z"
+    },
+    {
+      "id": "notif-viako0mhq",
+      "userId": "user-t45rkn5oq",
+      "type": "system",
+      "content": "Welcome to Connectify! Start exploring the feed, saving posts, and DMing GeminiBot for premium AI responses.",
+      "read": false,
+      "createdAt": "2026-11-03T17:09:16.680Z"
+    },
+    {
+      "id": "notif-8ftnyd3hj",
+      "userId": "user-ugn3l3q1c",
+      "type": "system",
+      "content": "Welcome to Connectify! Start exploring the feed, saving posts, and DMing GeminiBot for premium AI responses.",
+      "read": false,
+      "createdAt": "2026-11-03T17:09:16.996Z"
+    },
+    {
+      "id": "notif-rcy55expc",
+      "userId": "user-v1afv7yp9",
+      "type": "system",
+      "content": "Welcome to Connectify! Start exploring the feed, saving posts, and DMing GeminiBot for premium AI responses.",
+      "read": false,
+      "createdAt": "2026-11-03T17:09:17.250Z"
     }
   ],
   "messages": [
