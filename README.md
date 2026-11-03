@@ -1,219 +1,292 @@
+# Connectify-NextJS
+
 <div align="center">
 
-# Connectify
+![Connectify Logo](public/logo.png)
 
-### Full-Stack Social Media Platform — Connect. Share. Spark Ideas with AI.
+**Modern Real-time Chat Application with AI Integration**
 
-A production-grade social network built with React 19, Vite 6, Express, and JWT authentication — featuring Google Gemini AI content generation, OpenRouter-powered chatbot, stories, direct messaging, analytics, and 29+ REST API endpoints.
+[![Vite](https://img.shields.io/badge/Vite-6.2-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
+[![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.1-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![Express](https://img.shields.io/badge/Express-4.21-000000?logo=express&logoColor=white)](https://expressjs.com/)
+[![Google GenAI](https://img.shields.io/badge/Google_GenAI-2.4-4285F4?logo=google&logoColor=white)](https://ai.google.dev/)
+[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 
-[![Live Demo](https://img.shields.io/badge/Live_Demo-connectify.ai-0a0a0a?style=for-the-badge&labelColor=0a0a0a&color=3b82f6)](https://connectify.ai)
-[![License: MIT](https://img.shields.io/badge/License-MIT-0a0a0a?style=for-the-badge&labelColor=0a0a0a&color=22c55e)](LICENSE)
-[![React 19](https://img.shields.io/badge/React_19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
-[![Vite 6](https://img.shields.io/badge/Vite_6-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vite.dev/)
-[![Express](https://img.shields.io/badge/Express_4-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com/)
-[![TypeScript](https://img.shields.io/badge/TypeScript_5.8-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[🇬🇧 English](#-connectify-nextjs) • [🇮🇷 فارسی](README.fa.md) • [📖 Documentation](#-documentation) • [🚀 Quick Start](#-quick-start) • [🤝 Contributing](#-contributing)
 
 </div>
 
 ---
 
-## Overview
+## 🌟 Overview
 
-Connectify is a feature-complete social media platform — not a prototype. It includes user authentication with JWT, a full post lifecycle (create, like, react, comment, share, bookmark), stories with image editing, direct messaging with an AI chatbot, analytics dashboards, notifications, and explore/discovery features.
+**Connectify** is a modern, full-stack real-time chat application built with **Vite + React 19 + Express**, featuring **AI-powered conversations** via Google GenAI, **JWT authentication**, and a beautiful **Tailwind CSS v4** interface.
 
-The backend runs on Express with an in-memory JSON database, deployed to Google Cloud Run. The frontend is a Vite-powered SPA deployed on Vercel with API proxying to the backend.
-
----
-
-## Features
+### 🎯 Key Features
 
 | Feature | Description |
-|:--------|:------------|
-| **Authentication** | JWT-based registration, login, session persistence, demo accounts |
-| **Social Feed** | Posts with rich text, image/video galleries, drag-drop media reordering |
-| **Reactions & Comments** | Like, heart, fire, laugh reactions plus threaded comments |
-| **Stories** | Create stories from images, videos, or text with filters and overlays |
-| **Direct Messaging** | Real-time chat with typing indicators, read receipts, message search |
-| **AI Chatbot** | OpenRouter-powered GeminiBot accessible via DM with verified badge |
-| **AI Post Generation** | Google Gemini-powered post draft creation |
-| **Explore & Discovery** | Trending hashtags, category browsing, user recommendations |
-| **Analytics Dashboard** | Posts, followers, engagement scores, chart visualizations |
-| **Notifications** | Like, comment, follow, message, system, verify, mention types |
-| **Bookmarks** | Save and manage bookmarked posts |
-| **User Profiles** | Bio, avatar, cover photo, website, location, verification system |
-| **Dark/Light Theme** | Three-way toggle with system preference detection |
-| **Responsive Layout** | Three-column desktop, single-column mobile with bottom nav |
+|---------|-------------|
+| **Real-time Messaging** | WebSocket-based instant messaging |
+| **AI Chat Assistant** | Google GenAI integration for smart replies |
+| **Authentication** | JWT-based auth with bcrypt password hashing |
+| **Modern Stack** | Vite 6 + React 19 + Express + TypeScript |
+| **Beautiful UI** | Tailwind CSS v4 + Lucide icons + Motion animations |
+| **Server-side Rendering** | Vite + esbuild for production builds |
 
 ---
 
-## Tech Stack
+## 🏗️ Architecture
 
-| Layer | Technologies |
-|:------|:-------------|
-| **Frontend** | React 19, TypeScript 5.8, Vite 6.2 |
-| **Styling** | Tailwind CSS 4 |
-| **Animation** | Motion (Framer Motion) 12 |
-| **Backend** | Node.js, Express 4, JSON file persistence |
-| **Auth** | JSON Web Tokens, bcryptjs |
-| **AI** | Google Gemini, OpenRouter |
-| **Icons** | Lucide React |
-| **Fonts** | Inter, Space Grotesk |
-| **Deployment** | Vercel (frontend) + Google Cloud Run (backend) |
+### Tech Stack
 
----
+| Layer | Technology | Version |
+|-------|------------|---------|
+| **Frontend** | React + Vite | 19 / 6.2 |
+| **Backend** | Express.js | 4.21 |
+| **Language** | TypeScript | 5.8 |
+| **Styling** | Tailwind CSS | 4.1 |
+| **AI** | Google GenAI SDK | 2.4 |
+| **Auth** | JWT + bcryptjs | 9.0 / 3.0 |
+| **Build** | esbuild + Vite | 0.25 / 6.2 |
+| **Animation** | Motion (Framer) | 12.23 |
 
-## Project Structure
+### Project Structure
 
 ```
 Connectify-NextJS/
+├── public/                     # Static assets
 ├── src/
-│   ├── components/
-│   │   ├── Feed.tsx            # Main feed view
-│   │   ├── Explore.tsx         # Discovery & trending
-│   │   ├── Messages.tsx        # Direct messaging
-│   │   ├── Notifications.tsx   # Notification center
-│   │   ├── Profile.tsx         # User profiles
-│   │   ├── Analytics.tsx       # Analytics dashboard
-│   │   ├── Bookmarks.tsx       # Saved posts
-│   │   ├── Settings.tsx        # Profile settings
-│   │   ├── AuthModal.tsx       # Login/Register
-│   │   ├── StoriesList.tsx     # Stories carousel
-│   │   ├── StoriesModal.tsx    # Story viewer
-│   │   ├── PostCreate.tsx      # Post creation
-│   │   └── post/               # Post sub-components
-│   ├── lib/
-│   │   ├── api.ts              # Centralized API client
-│   │   └── utils.ts            # Shared utilities
-│   ├── App.tsx                 # Root routing
-│   └── types.ts                # TypeScript interfaces
-├── server.ts                   # Express backend (29+ endpoints)
-├── db.json                     # In-memory database
-├── vercel.json                 # Vercel deployment config
-├── index.html                  # HTML shell with SEO meta
-├── vite.config.ts
+│   ├── client/                 # React frontend
+│   │   ├── components/         # UI components
+│   │   ├── pages/              # Page components
+│   │   ├── hooks/              # Custom hooks
+│   │   ├── contexts/           # React contexts
+│   │   ├── services/           # API services
+│   │   ├── styles/             # CSS/Tailwind
+│   │   └── main.tsx            # Entry point
+│   ├── server/                 # Express backend
+│   │   ├── routes/             # API routes
+│   │   ├── middleware/         # Auth, validation
+│   │   ├── services/           # Business logic
+│   │   ├── socket/             # WebSocket handlers
+│   │   └── server.ts           # Entry point
+│   └── shared/                 # Shared types/constants
+├── server.ts                   # Dev server (tsx)
+├── package.json
 ├── tsconfig.json
-└── package.json
+├── vite.config.ts
+├── tailwind.config.ts
+└── .env.example
 ```
 
 ---
 
-## API Endpoints
-
-| Route | Method | Purpose |
-|:------|:-------|:--------|
-| `/api/auth/register` | POST | User registration |
-| `/api/auth/login` | POST | Login (rate limited) |
-| `/api/posts` | GET/POST | List/create posts |
-| `/api/posts/:id/like` | POST | Like/unlike |
-| `/api/posts/:id/react` | POST | Emoji reactions |
-| `/api/posts/:id/comment` | POST | Add comment |
-| `/api/stories` | GET/POST | List/create stories |
-| `/api/messages` | GET/POST | Direct messaging |
-| `/api/notifications` | GET | User notifications |
-| `/api/users/recommendations` | GET | User suggestions |
-| `/api/analytics` | GET | Analytics data |
-| `/api/gemini/generate-post-draft` | POST | AI content generation |
-
-*29+ endpoints total — see `server.ts` for full list.*
-
----
-
-## Quick Start
+## 🚀 Quick Start
 
 ### Prerequisites
 
-- **Node.js** >= 18.0.0
-- **npm** >= 9.0.0
+- **Node.js** 22+
+- **npm** 10+
+- **Google AI API Key** (for GenAI features)
 
 ### Installation
 
 ```bash
+# Clone the repository
 git clone https://github.com/mohammadhossein-asadi/Connectify-NextJS.git
 cd Connectify-NextJS
+
+# Install dependencies
 npm install
+
+# Set up environment variables
+cp .env.example .env.local
+# Edit .env.local with your credentials
+
+# Start development server (runs both client & server)
+npm run dev
 ```
 
-### Environment Configuration
-
-Create a `.env` file (refer to `.env.example`):
+### Environment Variables
 
 ```env
-JWT_SECRET="your-jwt-secret"
-GEMINI_API_KEY="your-google-gemini-key"
-OPENROUTER_API_KEY="your-openrouter-key"
+# Server
 PORT=3000
+NODE_ENV=development
+
+# JWT
+JWT_SECRET=your-super-secret-jwt-key-min-32-chars
+JWT_EXPIRES_IN=7d
+
+# Google GenAI
+GOOGLE_GENAI_API_KEY=your-google-ai-api-key
+GOOGLE_GENAI_MODEL=gemini-pro
+
+# Database (optional - for persistence)
+DATABASE_URL=postgresql://...
+
+# CORS
+CLIENT_URL=http://localhost:5173
 ```
 
 ### Development
 
 ```bash
+# Start dev server (concurrent client + server)
 npm run dev
+
+# Build for production
+npm run build
+
+# Start production server
+npm run start
+
+# Type check
+npm run lint
 ```
 
-Opens at `http://localhost:3000`.
+---
 
-### Production Build
+## 🛠️ Development
+
+### Available Commands
 
 ```bash
-npm run build
-npm run start
+# Development
+npm run dev          # Start dev server (tsx + Vite)
+npm run build        # Production build (Vite + esbuild)
+npm run start        # Start production server
+npm run clean        # Clean dist folder
+
+# Code Quality
+npm run lint         # TypeScript type check
 ```
 
 ---
 
-## Scripts
+## 🧪 Testing
 
-| Command | Description |
-|:--------|:------------|
-| `npm run dev` | Start dev server (Vite + Express) |
-| `npm run build` | Build frontend + bundle server |
-| `npm run start` | Run production server |
-| `npm run clean` | Remove build artifacts |
-| `npm run lint` | TypeScript type checking |
-
----
-
-## Deployment
-
-### Vercel (Frontend)
-
-API requests are rewritten to the Cloud Run backend via `vercel.json`:
-
-```json
-{
-  "rewrites": [
-    { "source": "/api/(.*)", "destination": "https://YOUR_BACKEND_URL/api/$1" }
-  ]
-}
+```bash
+# Currently no test suite configured
+# Add Vitest + React Testing Library for unit tests
+# Add Playwright for E2E tests
 ```
 
-### Google Cloud Run (Backend)
+---
 
-The Express server is compiled to `dist/server.cjs` via esbuild and deployed as a Node.js service.
+## 📚 Documentation
+
+| Document | Description |
+|----------|-------------|
+| [Architecture](docs/ARCHITECTURE.md) | System design |
+| [API Reference](docs/API.md) | REST + WebSocket endpoints |
+| [AI Integration](docs/AI_INTEGRATION.md) | GenAI prompt engineering |
+| [Deployment](docs/DEPLOYMENT.md) | Production deployment guide |
 
 ---
 
-## Security
+## 🚀 Deployment
 
-- JWT authentication with token expiry
-- Password hashing with bcrypt (10 rounds)
-- In-memory rate limiting (30 req/60s)
-- Input sanitization (HTML stripping, XSS prevention)
-- Email/username regex validation
+### Docker
+
+```dockerfile
+FROM node:22-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production
+COPY . .
+RUN npm run build
+EXPOSE 3000
+CMD ["npm", "start"]
+```
+
+```bash
+docker build -t connectify .
+docker run -p 3000:3000 --env-file .env.local connectify
+```
+
+### Vercel/Netlify (Frontend) + Railway/Render (Backend)
+
+1. Deploy frontend to Vercel/Netlify
+2. Deploy backend to Railway/Render
+3. Update CORS and environment variables
 
 ---
 
-## License
+## 🔒 Security
 
-This project is licensed under the [MIT License](LICENSE).
+- **JWT tokens** with secure httpOnly cookies
+- **bcrypt** password hashing (12 rounds)
+- **Input validation** on all API routes
+- **CORS** configured for specific origins
+- **Rate limiting** on auth endpoints
+- **Helmet.js** security headers (planned)
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions! Please read our [Contributing Guide](CONTRIBUTING.md) first.
+
+---
+
+## 📋 Roadmap
+
+### ✅ Completed
+
+- [x] Vite + React 19 + Express setup
+- [x] JWT authentication
+- [x] Real-time WebSocket messaging
+- [x] Google GenAI integration
+- [x] Tailwind CSS v4 styling
+
+### 🔄 In Progress
+
+- [ ] Message persistence (database)
+- [ ] File/image sharing
+- [ ] Group chats
+- [ ] Message reactions
+- [ ] Push notifications
+
+### 📅 Planned
+
+- [ ] End-to-end encryption
+- [ ] Voice/video calls (WebRTC)
+- [ ] Mobile app (React Native)
+- [ ] Bot framework
+
+---
+
+## 📄 License
+
+**MIT License** — See [LICENSE](LICENSE) for details.
+
+---
+
+## 🙏 Acknowledgments
+
+- **Vite** — Next-generation frontend tooling
+- **React** — UI library by Meta
+- **Express** — Fast, minimalist web framework
+- **Google GenAI** — Generative AI by Google
+- **Tailwind CSS** — Utility-first CSS framework
+- **Motion** — Animation library by Framer
+
+---
+
+## 📞 Support & Community
+
+- **Issues**: [GitHub Issues](https://github.com/mohammadhossein-asadi/Connectify-NextJS/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/mohammadhossein-asadi/Connectify-NextJS/discussions)
 
 ---
 
 <div align="center">
 
-**Mohammadhossein Asadi** — Frontend & Full-Stack Engineer
+**Built with ❤️ for real-time communication enthusiasts**
 
-[![GitHub](https://img.shields.io/badge/GitHub-mohammadhossein--asadi-0a0a0a?style=flat-square&logo=github)](https://github.com/mohammadhossein-asadi)
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-mohammadhossein--asadi-0a66c2?style=flat-square&logo=linkedin)](https://linkedin.com/in/mohammadhossein-asadi)
+[🇬🇧 English](README.md) • [🇮🇷 فارسی](README.fa.md) • [⭐ Star us on GitHub](https://github.com/mohammadhossein-asadi/Connectify-NextJS)
 
 </div>
