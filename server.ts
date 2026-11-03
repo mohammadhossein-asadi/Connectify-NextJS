@@ -16,8 +16,17 @@ import {
   User,
 } from "./src/types";
 
+// Load .env before any configuration is read from process.env.
+dotenv.config();
+
 // Security configuration
-const JWT_SECRET = process.env.JWT_SECRET || "connectify-dev-secret-change-in-production";
+const DEV_JWT_SECRET = "connectify-dev-secret-change-in-production";
+if (process.env.NODE_ENV === "production" && !process.env.JWT_SECRET) {
+  throw new Error(
+    "JWT_SECRET is not set. Refusing to start in production with the development fallback secret.",
+  );
+}
+const JWT_SECRET = process.env.JWT_SECRET || DEV_JWT_SECRET;
 const JWT_EXPIRES_IN = "7d";
 const BCRYPT_ROUNDS = 10;
 
@@ -97,16 +106,17 @@ function sanitizeUsers(users: User[]): Omit<User, "password">[] {
 }
 
 // Load environment variables
-dotenv.config();
-
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Behind Cloud Run / Vercel every request arrives from the proxy, so req.ip would
+// be the proxy's address and all users would share a single rate-limit bucket.
+app.set("trust proxy", 1);
 
 // Security headers middleware
 app.use((req, res, next) => {
   res.setHeader("X-Content-Type-Options", "nosniff");
   res.setHeader("X-Frame-Options", "DENY");
-  res.setHeader("X-XSS-Protection", "1; mode=block");
   res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
   next();
 });
@@ -435,9 +445,10 @@ const loadDatabase = () => {
 };
 
 const saveDatabase = () => {
+  const tmpFile = `${DB_FILE}.tmp`;
   try {
     fs.writeFileSync(
-      DB_FILE,
+      tmpFile,
       JSON.stringify(
         { users, posts, stories, notifications, messages },
         null,
@@ -445,6 +456,9 @@ const saveDatabase = () => {
       ),
       "utf-8",
     );
+    // Rename is atomic on the same filesystem: a crash mid-write can no longer
+    // leave db.json truncated, which loadDatabase() would silently reseed.
+    fs.renameSync(tmpFile, DB_FILE);
   } catch (error) {
     console.error("Error saving database:", error);
   }
@@ -1842,8 +1856,11 @@ async function startServer() {
     app.use(vite.middlewares);
   }
 
-  // Find an available port starting from the configured PORT
-  const availablePort = await getAvailablePort(Number(PORT));
+  // In production the platform routes traffic to exactly $PORT, so it must not
+  // be relocated: a container listening elsewhere fails health checks.
+  const availablePort = isProduction
+    ? Number(PORT)
+    : await getAvailablePort(Number(PORT));
 
   app.listen(availablePort, "0.0.0.0", () => {
     console.log(
