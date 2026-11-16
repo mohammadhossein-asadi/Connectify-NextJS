@@ -234,6 +234,14 @@ const SEED_USERS: User[] = [
   },
 ];
 
+// Seed accounts are public demo accounts. They share this documented password so
+// demo logins keep working now that login fails closed when no hash is stored.
+const SEED_PASSWORD_HASH =
+  "$2b$10$tiSkfHp4hx8WIhybVU/nhui/raVyMOQHF4aeRdgOUvq6G1juAETYy";
+SEED_USERS.forEach((u) => {
+  u.password = SEED_PASSWORD_HASH;
+});
+
 const SEED_POSTS: Post[] = [
   {
     id: "post-1",
@@ -537,10 +545,15 @@ async function generateBotResponse(promptText: string): Promise<string> {
 // ---------------- REST API ROUTES ----------------
 
 // 1. AUTHENTICATION
-app.post("/api/auth/register", (req, res) => {
+app.post("/api/auth/register", async (req, res) => {
   const { email, username, password } = req.body;
   if (!email || !username || !password) {
     return res.status(400).json({ error: "All fields are required" });
+  }
+  if (typeof password !== "string" || password.length < 8) {
+    return res
+      .status(400)
+      .json({ error: "Password must be at least 8 characters long" });
   }
 
   const cleanUsername = username.replace(/\s+/g, "");
@@ -560,6 +573,7 @@ app.post("/api/auth/register", (req, res) => {
     id: "user-" + generateId(),
     email: email.toLowerCase(),
     username: cleanUsername,
+    password: await bcrypt.hash(password, BCRYPT_ROUNDS),
     bio: `Hey there! I am ${cleanUsername}, a proud member of Connectify.`,
     avatar: `https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80`,
     cover: `https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80`,
@@ -607,12 +621,14 @@ app.post("/api/auth/login", rateLimit(60000, 20), async (req, res) => {
     return res.status(401).json({ error: "Invalid credentials" });
   }
 
-  // Verify password against hash
-  if (user.password) {
-    const isValid = await bcrypt.compare(password, user.password);
-    if (!isValid) {
-      return res.status(401).json({ error: "Invalid credentials" });
-    }
+  // Fail closed: an account with no stored hash must never authenticate.
+  if (!user.password) {
+    return res.status(401).json({ error: "Invalid credentials" });
+  }
+
+  const isValid = await bcrypt.compare(password, user.password);
+  if (!isValid) {
+    return res.status(401).json({ error: "Invalid credentials" });
   }
 
   res.status(200).json({ user: sanitizeUser(user), token: generateToken(user.id) });
@@ -1862,9 +1878,14 @@ async function startServer() {
     ? Number(PORT)
     : await getAvailablePort(Number(PORT));
 
-  app.listen(availablePort, "0.0.0.0", () => {
+  const server = app.listen(availablePort, "0.0.0.0", () => {
+    // PORT=0 asks the OS for any free port, so report the port actually bound
+    // rather than the one that was requested.
+    const bound = server.address();
+    const listening =
+      typeof bound === "object" && bound !== null ? bound.port : availablePort;
     console.log(
-      `[Connectify Backend Server] Running on http://localhost:${availablePort}`,
+      `[Connectify Backend Server] Running on http://localhost:${listening}`,
     );
   });
 }

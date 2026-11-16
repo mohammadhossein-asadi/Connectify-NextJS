@@ -4,26 +4,24 @@ Produced from a full read of the repo, a Ponytail-style audit (reuse before writ
 
 Every number below was measured on this machine, not estimated. Anything that could not be measured is labelled **hypothesis** and comes with the command that would settle it.
 
-**Codebase size:** 9,616 lines in `src/` (27 files, 24 of which currently fail typecheck) + 1,855 in `server.ts`. 34 Express routes.
+**Codebase size:** 9,616 lines in `src/` (27 files) + 1,855 in `server.ts`. 34 Express routes.
+
+**Status:** phases 0–2 are implemented and verified; see [§9 Implementation status](#9-implementation-status).
 
 ---
 
 ## 0. The headline finding
 
-`npm run lint` — the project's only quality gate — **has never checked anything.**
+`npm run lint` — the project's only quality gate — **had never checked anything.**
 
-`@types/react` and `@types/react-dom` are absent from `devDependencies`. Without them `tsc` cannot resolve JSX at all, so every element in every component is implicitly `any`. Measured: **2,640 type errors**, of which 2,392 are the `TS7026` cascade from that single missing dependency. Install the two packages and the real count drops to ~248.
+`@types/react` and `@types/react-dom` were absent from `devDependencies`. Without them `tsc` cannot resolve JSX at all, so every element in every component is implicitly `any`. Measured before the fix: **2,640 type errors**, of which 2,392 were the `TS7026` cascade from that single missing dependency.
 
-This is why three separate defects have survived in the tree: `LazyImage.tsx` declares props that don't exist, `Feed.tsx` imports the same function three times, and `ErrorBoundary.tsx` never type-checks its own state. Nothing was watching.
+With the two packages installed the error count is **8**, not the ~248 originally estimated here. That estimate assumed the cascade was hiding a large tail of latent `noImplicitAny` errors; it was not. Five of those 8 were the duplicates and missing-prop defects already spotted, and the remaining three were **live runtime bugs** that no amount of manual review had caught:
 
-**Fix this before any refactor.** A UI/UX migration on top of a dead typecheck is 9,600 lines of unverified edits.
+- `Feed.tsx` read `user.name`, a field that does not exist on `User` (only `username` does). One call site rendered a blank name; the other, `u.name.toLowerCase()` inside the DM recipient filter, **threw a `TypeError`** as soon as a search term failed to match a username. `Register` never validated the field, so nothing failed loudly.
+- `Messages.tsx` passed `title` to two Lucide icons, which do not accept it — the read/sent indicator had silently been rendering with no accessible name.
 
-```bash
-npm i -D @types/react @types/react-dom
-npx tsc --noEmit   # expect ~248 remaining, not 2,640
-```
-
-Then decide the gate: either fix the ~248, or set `noImplicitAny: false` in `tsconfig.json` as a **labelled** temporary (`shortcut: implicit any allowed, remove after N call sites are typed`) so the gate catches regressions from today forward without requiring a full annotation pass first.
+The gate now passes cleanly (`tsc` exits 0), and it is the reason the three critical defects below were found.
 
 ---
 
@@ -39,7 +37,7 @@ Ponytail's first rung: does it need to exist?
 | 1.4 | `autoprefixer` | In `devDependencies`. No `postcss.config.*` exists; Tailwind v4 handles prefixing internally. | Remove from `package.json`. | — |
 | 1.5 | `@types/bcryptjs@2.4.6` | `bcryptjs@3` ships its own `index.d.ts` (verified in `node_modules`). The `@types` package is a stale stub for v2. | Remove. | — |
 | 1.6 | `vite` | Declared in **both** `dependencies` (`^6.2.3`) and `devDependencies` (`^6.2.3`). | Keep the `devDependencies` entry only. | — |
-| 1.7 | `docs/project-dna.md` | Describes "Next.js 16, App Router, Prisma, PostgreSQL, NextAuth v5, shadcn/ui, React Query + SWR, Persian RTL, Jalali calendar". **None of that is in this repo** — it's React 19 + Vite + Express + JWT + `db.json`. | Delete or rewrite. A wrong document actively misleads every agent and contributor that reads it, including me on the first pass. | ~50 |
+| 1.7 | `docs/project-dna.md` *(not yet actioned)* | Describes "Next.js 16, App Router, Prisma, PostgreSQL, NextAuth v5, shadcn/ui, React Query + SWR, Persian RTL, Jalali calendar". **None of that is in this repo** — it's React 19 + Vite + Express + JWT + `db.json`. | Delete or rewrite. A wrong document actively misleads every agent and contributor that reads it, including me on the first pass. | ~50 |
 
 Total: ~170 lines and 3 dependencies removed, no behaviour change. Run `npm run build` afterwards — this is the only check these changes need.
 
@@ -48,6 +46,26 @@ Total: ~170 lines and 3 dependencies removed, no behaviour change. Run `npm run 
 ## 2. Correctness and security
 
 Ordered by damage-if-skipped, each with the reason it's not optional (Ponytail never cuts data-loss handling or security).
+
+### 2.0 Anyone can log in as anyone — **critical, found during implementation**
+
+The login handler verified the password **only if one was stored**:
+
+```ts
+if (user.password) {
+  const isValid = await bcrypt.compare(password, user.password);
+  if (!isValid) return res.status(401).json({ error: "Invalid credentials" });
+}
+res.status(200).json({ user: sanitizeUser(user), token: generateToken(user.id) });
+```
+
+Registration accepted a `password`, validated that it was present, then built the new user **without ever hashing or storing it**. Every seed user in `db.json` also had no password. The two bugs compose: any account without a stored hash skipped verification entirely, so **every new account and every seed account authenticated with any password at all** — a one-request account takeover with no credential.
+
+`README.md` claims "JWT-based auth with bcrypt password hashing" and "bcrypt password hashing (12 rounds)". Neither was true: `BCRYPT_ROUNDS` is 10, and registration never hashed.
+
+Fixed by making login fail closed, hashing on registration with an 8-character minimum, and giving the three seed users a real hash of a documented demo password (`Connectify123!`). Verified end-to-end against a running server: short password → 400, valid registration → 201, correct login → 200, wrong password → 401, seed user with the demo password → 200, seed user with any other password → 401.
+
+**Consequence for the demo:** the seed accounts now require `Connectify123!`. That is the point — the previous behaviour was not "convenient demo login", it was an open door.
 
 ### 2.1 The whole database is one non-atomic `writeFileSync` — **critical**
 
@@ -249,3 +267,46 @@ Phases 0–4 are low-risk and independent of any design decision. Phase 5 onward
 - Design-drift counts come from `grep` over `src/**/*.tsx` and `src/index.css` — reproducible, and deliberately not eyeballed.
 - Font cost, LCP, INP and third-party weight are **hypotheses**, not measurements. Settling them needs a cold-cache DevTools trace of the running app; the commands are given inline above.
 - No runtime performance claim in this document has been verified against a running server. Phases 4 and 7 should be measured before and after, under identical conditions.
+
+---
+
+## 9. Implementation status
+
+Work completed and verified on this machine. Every check below was re-run after the final edit; none is inferred.
+
+### Phase 0 — typecheck gate: done
+
+- Added `@types/react` and `@types/react-dom` to `devDependencies`.
+- `npx tsc --noEmit` → **exit 0, 0 errors** (from 2,640).
+- Fixed along the way: the duplicate `formatRelativeTime` import, the untyped `Variants` object (`Feed.tsx`), the non-existent `User.name` reads (one of which threw), and the invalid `title` prop on two Lucide icons.
+
+### Phase 1 — deletions: done (one item deferred)
+
+| Item | Result |
+|---|---|
+| `src/lib/api.ts` | Deleted, plus its unused import in `App.tsx`. |
+| `src/components/LazyImage.tsx` | Deleted. |
+| Duplicate `formatRelativeTime` import | Removed, one import remains. |
+| `autoprefixer` | Removed from `package.json`. |
+| `@types/bcryptjs` | Removed — `bcryptjs@3` ships its own types. |
+| Duplicate `vite` entry | Removed from `dependencies`; kept in `devDependencies`. |
+| `docs/project-dna.md` | **Not actioned** — deleting or rewriting a doc that describes an entirely different stack is a judgement call for the owner, not a mechanical fix. |
+
+### Phase 2 — correctness and security: done
+
+| Fix | Verification |
+|---|---|
+| **2.0 auth bypass** | Six-case end-to-end test against a running server; all six returned the expected status. Stored value confirmed to be a bcrypt hash with no plaintext. |
+| **2.1 atomic save** | 5 rapid registrations → `db.json` parsed cleanly, all 5 users present, no `.tmp` residue left behind. |
+| **2.2 `trust proxy`** | Set to 1 hop so `req.ip` reflects `X-Forwarded-For` instead of the proxy. Rate-limit buckets are now per client. |
+| **2.3 `JWT_SECRET`** | Production boot without a secret now throws and refuses to listen — verified. Also fixed the ordering bug that made the guard pointless: `dotenv.config()` ran at line 100, *after* `JWT_SECRET` was read at line 21, so a `.env` value had never been used. This repo's `.env` does define one. |
+| **2.4 `$PORT`** | Production now listens on exactly `$PORT`; the port-scanning fallback is dev-only. Verified on a custom port. |
+| **deprecated header** | Removed `X-XSS-Protection`. A CSP is **not** yet added — it needs testing against the real asset origins first. |
+
+### Not yet done
+
+Phase 3 (the three `node --test` cases), phase 4 (font loading, `transition: all`, the polling loop), phases 5–6 (the token layer and component migration), and phase 7 (features). §2.5 (CSP/HSTS) and §1.7 remain open.
+
+### Correction to an earlier figure
+
+The package-scoped claim of "~248 remaining type errors after adding the React types" was wrong; the true number was 8. The estimate was not measured, and the document's own rule — measure, don't estimate — should have applied to it. Other unmeasured items are still labelled as hypotheses.
